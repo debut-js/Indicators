@@ -16,6 +16,7 @@ The main feature of these indicators is their continuous operation, which means 
 
 ## Available Indicators
 - [Accelerator Oscillator (AO)](./docs/AcceleratorOscillator.md).
+- [Adaptive Moving Average (AMA)](./docs/AdaptiveMovingAverage.md).
 - [Average True Range (ATR)](./docs/AverageTrueRange.md).
 - [Awesome Oscillator (AC)](./docs/AwesomeOscillator.md).
 - [Average Directional Index  (ADX)](./docs/AverageDirectionalIndex.md).
