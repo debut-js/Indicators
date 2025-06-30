@@ -39,4 +39,17 @@ export { Sampler } from './src/providers/sampler';
 export { VolumeProfile } from './src/volume-profile'; /** BETA UNSTABLE */
 export { ChaikinOscillator } from './src/chaikin';
 export { AMA } from './src/ama';
+export { Ichimoku } from './src/ichimoku';
+export { Envelopes } from './src/envelopes';
+export { KeltnerChannel } from './src/keltner';
+export { DMI } from './src/dmi';
+export { TEMA } from './src/tema';
+export { TRIX } from './src/trix';
+export { CMO } from './src/cmo';
+export { DPO } from './src/dpo';
 // export { OrderBlock } from './src/order-block';
+export { UltimateOscillator } from './src/ultimate-oscillator';
+export { ElderRay } from './src/elder-ray';
+export { ForceIndex } from './src/force-index';
+export { Fractal } from './src/fractal';
+export { VolumeOscillator } from './src/volume-oscillator';
