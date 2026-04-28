@@ -30,8 +30,8 @@ export class ElderRay {
         const bull = high - ema;
         const bear = low - ema;
         this.nextValue = (high: number, low: number, close: number) => {
-            const ema = this.ema.nextValue(close);
-            return { bull, bear };
+            const e = this.ema.nextValue(close);
+            return { bull: high - e, bear: low - e };
         };
         return { bull, bear };
     }

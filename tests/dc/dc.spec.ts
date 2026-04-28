@@ -1,7 +1,7 @@
 import { DC } from '../../src/dc';
 import { dcValues, ohlc } from './excel-data';
 
-describe.only('Donchian Channels', () => {
+describe('Donchian Channels', () => {
     it('Excel Validate', () => {
         const dc = new DC(21);
         const EPSILON = 0.001;
