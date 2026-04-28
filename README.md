@@ -23,10 +23,19 @@ The main feature of these indicators is their continuous operation, which means 
 - [Bollinger Bands (BB)](./docs/BollingerBands.md).
 - [Chaikin Oscillator](./docs/ChaikinOscillator.md).
 - [Commodity Channel Index (CCI)](./docs/CommodityChannelIndex.md).
+- [Chande Momentum Oscillator (CMO)](./docs/CMO.md).
 - [Connor's RSI (CRSI)](./docs/ConnorsRSI.md).
 - [Donchian Channels (DC)](./docs/DonchianChannels.md).
+- [Directional Movement Index (DMI)](./docs/DMI.md).
+- [Detrended Price Oscillator (DPO)](./docs/DPO.md).
+- [Elder Ray Index (Bull / Bear power)](./docs/ElderRay.md).
+- [Moving average envelopes](./docs/Envelopes.md).
 - [Exponential Moving Average (EMA)](./docs/ExponentialMovingAverage.md).
 - [Exponential Weighted Moving Average (EWMA)](./docs/ExponentialWeightedMovingAverage.md).
+- [Force index](./docs/ForceIndex.md).
+- [Fractal (Bill Williams)](./docs/Fractal.md).
+- [Ichimoku Cloud](./docs/IchimokuCloud.md).
+- [Keltner channel](./docs/KeltnerChannel.md).
 - [Linearly Weighted Moving Average (LWMA)](./docs/LinearlyWeightedMovingAverage.md).
 - [Moving Average Convergence Divergence (MACD)](./docs/MovingAverageConvergenceDivergence.md).
 - [Money Flow Index (MFI)](./docs/MoneyFlowIndex.md).
@@ -38,10 +47,14 @@ The main feature of these indicators is their continuous operation, which means 
 - [SuperTrend MTF (ST MTF)](./docs/SuperTrend.md).
 - [Stochastic Oscillator (KD)](./docs/StochasticOscillator.md).
 - [Stochastic Rsi (KD)](./docs/StochasticRsi.md).
+- [Triple Exponential Moving Average (TEMA)](./docs/TEMA.md).
+- [TRIX](./docs/TRIX.md).
+- [Ultimate oscillator](./docs/UltimateOscillator.md).
 - [Wilder's Smoothed Moving Average (WEMA)](./docs/WildersSmoothedMovingAverage.md).
 - [Welles Wilder's Smoothing Average (WWS)](./docs/WellesWildersSmoothingAverage.md).
 - [Weighted moving average (WMA)](./docs/WeightedMovingAverage.md)
 - [Parabolic Stop And Reverse (PSAR)](./docs/ParabolicStopAndReverse.md).
+- [Volume oscillator](./docs/VolumeOscillator.md).
 - Volume Profile (TBD)
 
 ## Candles
