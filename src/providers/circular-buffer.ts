@@ -51,6 +51,31 @@ export class CircularBuffer<T = number> {
     }
 
     /**
+     * Native `Array.prototype.at`-style indexing. Negative offsets count
+     * back from the most recent push: `at(-1)` returns the value pushed
+     * last, `at(-2)` the one before it, etc. Positive offsets count
+     * from the oldest entry currently stored: `at(0)` is the oldest,
+     * `at(loaded - 1)` the newest. Returns `undefined` when the
+     * requested slot hasn't been written yet (warmup).
+     *
+     * Useful for pipelines that pull "previous-bar" values (e.g. SMA
+     * cross detection) without manually walking `toArray()` and
+     * tracking how the ring wrapped.
+     */
+    public at(offset: number): T | undefined {
+        const len = this.loaded;
+        if (len === 0) return undefined;
+        const virtIdx = offset < 0 ? len + offset : offset;
+        if (virtIdx < 0 || virtIdx >= len) return undefined;
+        // For an unfilled buffer items live in `[0, pointer)` in
+        // insertion order, so the oldest is at index 0. Once filled,
+        // the oldest sits at `pointer` (the next slot to be
+        // overwritten) and we wrap modulo length from there.
+        const start = this.filled ? this.pointer : 0;
+        return this.buffer[(start + virtIdx) % this.length];
+    }
+
+    /**
      * Array like forEach loop
      */
     public forEach(callback: (value: T, index?: number) => void) {
