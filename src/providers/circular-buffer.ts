@@ -79,6 +79,13 @@ export class CircularBuffer<T = number> {
     }
 
     /**
+     * Number of values currently stored (before wrap: same as write position; after fill: buffer length).
+     */
+    public get loaded(): number {
+        return this.filled ? this.length : this.pointer;
+    }
+
+    /**
      * Fill buffer
      */
     public fill(item: T) {

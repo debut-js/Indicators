@@ -30,14 +30,18 @@ export class SMA {
             return this.sum / this.period;
         };
 
-        this.momentValue = (value: number) => {
-            return (this.sum - this.circular.peek() + value) / this.period;
-        };
-
         return this.sum / this.period;
     }
 
-    momentValue(value: number): number {
-        return;
+    /** Same window as the next {@link nextValue} would use, without advancing state (see debut-js/Indicators#38). */
+    momentValue(value: number) {
+        if (!this.circular.filled) {
+            if (this.circular.loaded === this.period - 1) {
+                return (this.sum + value) / this.period;
+            }
+            return;
+        }
+
+        return (this.sum - this.circular.peek() + value) / this.period;
     }
 }

@@ -59,4 +59,20 @@ describe('Simple Moving Average', () => {
             expect(calc).toEqual(cross);
         });
     });
+
+    // https://github.com/debut-js/Indicators/issues/38
+    it('momentValue on the bar that would first fill the window matches nextValue on that bar', () => {
+        const period = 10;
+        const sma = new SMA(period);
+        const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        for (const v of values) {
+            expect(sma.nextValue(v)).toBeUndefined();
+        }
+        const tenth = 42;
+        const m = sma.momentValue(tenth) as number;
+        const sma2 = new SMA(period);
+        for (const v of values) sma2.nextValue(v);
+        const n = sma2.nextValue(tenth) as number;
+        expect(m).toBeCloseTo(n, 10);
+    });
 });
