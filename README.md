@@ -4,6 +4,9 @@
 # Streaming Technical Indicators
 ## High performance for you trading application
 
+> **Sponsored by [Backticks](https://backticks.io)** — a visual canvas to build, backtest and optimize trading strategies in your browser. Built on top of this library.
+
+
 The main feature of these indicators is their continuous operation, which means that you can use them both for real trading and for teaching trading strategies on history, since this is a passage from the beginning to the end of the stream of candles. This approach allows you to reduce the number of necessary calculations by tens of times and is the most optimal in terms of performance.
 
 ## Features
