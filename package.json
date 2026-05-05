@@ -65,6 +65,8 @@
         "eslint-config-prettier": "^6.11.0",
         "eslint-plugin-prettier": "^3.1.4",
         "jest": "^27.0.6",
+        "lightweight-charts-indicators": "^0.4.1",
+        "oakscriptjs": "^0.2.8",
         "prettier": "^2.0.5",
         "rollup": "^2.18.0",
         "rollup-plugin-buble": "^0.19.8",
@@ -77,6 +79,5 @@
         "ts-jest": "^27.0.3",
         "ts-node": "^8.10.2",
         "typescript": "^3.9.5"
-    },
-    "optionalDependencies": {}
+    }
 }

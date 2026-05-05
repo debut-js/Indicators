@@ -29,12 +29,19 @@ export class MeanDeviationProvider {
     }
 
     private pureMomentValue(typicalPrice: number, average: number) {
-        const rm = this.values.push(typicalPrice);
-        const mean = this.values.toArray().reduce((acc, value) => acc + this.positiveDelta(average, value), 0);
+        // Sum the absolute deviations over the hypothetical post-push
+        // window without mutating the buffer: skip the slot that would
+        // be evicted (when filled) and tack on `typicalPrice` as the
+        // newest entry.
+        const startOffset = this.values.filled ? 1 : 0;
+        const realCount = this.values.loaded - startOffset;
 
-        this.values.pushback(rm);
+        let sum = this.positiveDelta(average, typicalPrice);
+        for (let i = 0; i < realCount; i++) {
+            sum += this.positiveDelta(average, this.values.at(i + startOffset) as number);
+        }
 
-        return mean / this.period;
+        return sum / this.period;
     }
 
     private positiveDelta(a: number, b: number) {

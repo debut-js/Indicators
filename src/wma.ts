@@ -40,21 +40,29 @@ export class WMA {
      * does not affect any next calculations
      */
     momentValue(value: number) {
-        const removed = this.buffer.push(value);
-
+        // Compute the WMA over the hypothetical post-push window
+        // without mutating the buffer. WMA weights run 1..period from
+        // oldest to newest; weight `period` is reserved for `value`.
         if (!this.buffer.filled) {
-            this.buffer.pushback(removed);
-            return;
+            if (this.buffer.loaded !== this.period - 1) {
+                return;
+            }
+            // Buffer would fill on this push with no eviction.
+            let result = 0;
+            for (let i = 0; i < this.period - 1; i++) {
+                result += ((this.buffer.at(i) as number) * (i + 1)) / this.denominator;
+            }
+            result += (value * this.period) / this.denominator;
+            return result;
         }
 
+        // Filled: hypothetical push evicts at(0); existing entries
+        // shift down one weight slot, `value` lands at weight=period.
         let result = 0;
-
-        this.buffer.forEach((v, idx) => {
-            result += (v * (idx + 1)) / this.denominator;
-        });
-
-        this.buffer.pushback(removed);
-
+        for (let i = 0; i < this.period - 1; i++) {
+            result += ((this.buffer.at(i + 1) as number) * (i + 1)) / this.denominator;
+        }
+        result += (value * this.period) / this.denominator;
         return result;
     }
 }

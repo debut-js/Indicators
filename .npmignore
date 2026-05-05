@@ -1,11 +1,45 @@
-node_modules/
-.nyc_output
-coverage
+# Editor / IDE
 .editorconfig
-.eslintrc.js
-.prettierrc.js
-README.md
+.vscode/
+.idea/
+
+# CI / repo metadata
+.github/
+.gitignore
+.gitattributes
+
+# Linters & formatters
+.eslintrc
+.eslintrc.*
+.prettierrc
+.prettierrc.*
+
+# Build / TS configuration (shipping compiled `lib/` only)
+tsconfig.json
 rollup.config.js
+
+# Tests, coverage, raw datasets
+jest.config.js
+tests/
+*.spec.ts
+*.test.ts
+coverage/
+.nyc_output/
 *.xlsx
 *.xls
 *.xlsm
+
+# Source — npm consumers use the prebuilt `lib/` bundle
+# (anchored to repo root so generated `lib/src/*.d.ts` is preserved)
+/src/
+/index.ts
+
+# Docs (kept on GitHub, not in tarball)
+docs/
+
+# Lock files / dev artifacts
+package-lock.json
+yarn.lock
+node_modules/
+*.log
+.DS_Store

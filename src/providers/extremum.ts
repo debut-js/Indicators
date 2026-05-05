@@ -16,6 +16,14 @@ export class Extremums extends CircularBuffer {
     }
 
     momentValue(value: number) {
+        // `getExtremum` walks `this.buffer` directly with neighbour
+        // lookups (idx ± 1), so a peek-based hypothetical scan would
+        // require duplicating that traversal. We deliberately keep the
+        // push/pushback pattern here despite the deprecation marker —
+        // it's the only safe way to share `getExtremum`'s logic without
+        // forking the algorithm. Note: `getExtremum` also mutates
+        // `this.prevIx`, which pushback does NOT revert (long-standing
+        // behaviour, preserved here).
         const rm = this.push(value);
         const extr = this.getExtremum();
         this.pushback(rm);
