@@ -199,8 +199,6 @@ Below is the full catalog grouped by category. Names in `code style` are the exa
 
 ## Candlestick Patterns
 
-35 patterns ported from the [`technicalindicators`](https://github.com/anandanand84/technicalindicators) candlestick library. Each is a streaming class:
-
 ```ts
 import { Doji, BullishEngulfingPattern, HammerPattern } from '@debut/indicators';
 
