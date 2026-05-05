@@ -199,72 +199,96 @@ Below is the full catalog grouped by category. Names in `code style` are the exa
 
 ## Candlestick Patterns
 
-44 patterns ported from the TradingView "All Candlestick Patterns" reference (and the LWC reference implementation). Each is a class that returns `true`/`false` per bar via `nextValue(open, high, low, close)`, returning `undefined` while the lookback warm-up is in progress.
-
-### Isolation: each pattern owns the minimum it needs
-
-Patterns are deliberately self-contained. When you do `new Doji()`, it builds a `Candles` context with **only** the per-bar fields its predicate reads — no EMA(14) of body, no SMA(50) of close. So a standalone `Doji` produces meaningful output from bar 1, while `Hammer` (which reads the trend filter) waits for the SMA(50) warmup, and `FallingThreeMethods` (5-bar pattern with body / trend) waits for both.
+35 patterns ported from the [`technicalindicators`](https://github.com/anandanand84/technicalindicators) candlestick library. Each is a streaming class:
 
 ```ts
-import { Doji, Hammer, FallingThreeMethods } from '@debut/indicators';
+import { Doji, BullishEngulfingPattern, HammerPattern } from '@debut/indicators';
 
-new Doji();                // Candles({ lookback: 1, bodyAvg: false, trend: false })
-new Hammer();              // Candles({ lookback: 1, bodyAvg: true,  trend: true  })
-new FallingThreeMethods(); // Candles({ lookback: 5, bodyAvg: true,  trend: true  })
+const doji = new Doji();
+const engulfing = new BullishEngulfingPattern();
+const hammer = new HammerPattern();   // 5-bar with confirmation candle
+
+for (const bar of bars) {
+    if (doji.nextValue(bar.open, bar.high, bar.low, bar.close)) console.log('Doji', bar.time);
+    if (engulfing.nextValue(bar.open, bar.high, bar.low, bar.close)) console.log('Bull Engulfing', bar.time);
+    if (hammer.nextValue(bar.open, bar.high, bar.low, bar.close)) console.log('Hammer', bar.time);
+}
 ```
 
-### Combined scan: `AllCandlestickPatterns`
+`nextValue` returns `true` when the pattern fires, `false` if not, and `undefined` while it's still warming up (multi-bar patterns need their full lookback first).
 
-When you want to scan a bar against all 44 patterns at once, use the combined detector. It maintains a single full-feature `Candles` context shared between every pattern, so per-bar derivations are computed exactly once per bar.
+### Configurable thresholds
+
+Each pattern accepts an options bag in its constructor. The defaults match `technicalindicators` exactly; tighten or loosen them as you see fit.
+
+| Option | Used by | Default | Description |
+|--------|---------|---------|-------------|
+| `precision` | Doji-family, Marubozu, hammer-stick, HaramiCross, HammerPattern, HangingMan, ShootingStar, Abandoned/Doji-Star variants | `0.001` | Fuzzy-match tolerance: how close `open`≈`close` (or `body`-touches-`high`/`low`) must be to qualify as "equal". `0.001` ≈ 0.1% relative. |
+| `shadowToBodyRatio` | Hammer-stick variants, HammerPattern, HangingMan, ShootingStar | `2` | The opposing shadow must be at least this many times the body length. |
+| `minShadowToBodyRatio` | SpinningTop variants | `1` | Both shadows must be strictly larger than the body by this ratio. |
+| `equalityTolerance` | Tweezer-Bottom/Top | `0` (exact) | How close `low[i]`/`high[i]` of the two candles must be. |
+| `confirm` | HammerPattern, HangingMan, ShootingStar | `true` | Require the 5th bar's confirmation candle. The `*Unconfirmed` variants flip this to `false`. |
 
 ```ts
-import { AllCandlestickPatterns } from '@debut/indicators';
+const wideDoji = new Doji({ precision: 0.005 });           // 0.5% relative tolerance
+const fastHammer = new HammerPattern({ confirm: false });  // skip the confirmation candle
+const looseTweezer = new TweezerBottom({ equalityTolerance: 0.0001 });
+```
 
-const detector = new AllCandlestickPatterns();
+### Combined scanners
+
+If you want to scan a bar against many patterns at once, use one of the three combined scanners. They share the singleton `OhlcBuffer` declared inside the patterns module so you don't pay for per-pattern buffers.
+
+```ts
+import { AllCandlestickPatterns, BullishPatterns, BearishPatterns } from '@debut/indicators';
+
+const all = new AllCandlestickPatterns();
+const bull = new BullishPatterns();
+const bear = new BearishPatterns();
+
 for (const bar of bars) {
-    const fired = detector.nextValue(bar.open, bar.high, bar.low, bar.close);
+    const fired = all.nextValue(bar.open, bar.high, bar.low, bar.close);
     if (fired.length) console.log(bar.time, fired);
-    // → e.g. [1700000000, ['Hammer', 'LongLowerShadow']]
+    // → e.g. [1700000000, ['BullishHammerStick', 'BullishMarubozu']]
+
+    if (bull.nextValue(bar.open, bar.high, bar.low, bar.close)) console.log('any bullish');
+    if (bear.nextValue(bar.open, bar.high, bar.low, bar.close)) console.log('any bearish');
 }
 ```
 
-### Manually sharing a `Candles` context
+`AllCandlestickPatterns.nextValue` returns the array of pattern names that fired on the bar; `BullishPatterns` / `BearishPatterns` return a single boolean ("did *any* pattern fire").
 
-If you only need a handful of specific patterns, you can construct a `Candles` with the exact features required and pass it in. The base class validates that the shared context covers each pattern's needs and throws otherwise — so misconfigurations fail fast instead of silently producing wrong output.
+### Singleton buffer & resetting between streams
+
+All multi-bar patterns share one `OhlcBuffer(5)` declared at module scope in `src/candlestick/patterns.ts`. The first pattern that sees a brand-new bar advances the buffer; later calls within the same tick are dedup'd by OHLC equality. This means dropping in a fresh pattern instance is essentially free — there's no per-pattern ring allocation.
+
+If you switch between independent bar streams (or want a clean slate between test cases), call `BasePattern.reset()`:
 
 ```ts
-import { Candles, Doji, Hammer, EngulfingBullish } from '@debut/indicators';
+import { BasePattern } from '@debut/indicators/lib/src/candlestick/patterns';
 
-const candles = new Candles({ bodyAvg: true, trend: true, lookback: 2 });
-const detectors = [new Doji(candles), new Hammer(candles), new EngulfingBullish(candles)];
-
-for (const bar of bars) {
-    candles.nextValue(bar.open, bar.high, bar.low, bar.close);
-    for (const d of detectors) {
-        if (d.detect() === true) console.log('fired:', d.constructor.name, bar.time);
-    }
-}
+BasePattern.reset(); // clears the singleton OHLC ring + dedupe state
 ```
 
-Or via the `Candlestick` namespace if you'd rather not import 40+ symbols by name:
+### Namespaced import
+
+If you'd rather not pull 35 symbols into scope:
 
 ```ts
 import { Candlestick } from '@debut/indicators';
 
-const detector = new Candlestick.AllCandlestickPatterns();
 const doji = new Candlestick.Doji();
+const all = new Candlestick.AllCandlestickPatterns();
 ```
 
 ### Pattern catalog
 
 | Lookback | Patterns |
 |----------|----------|
-| 1 bar    | `Doji`, `DragonflyDoji`, `GravestoneDoji`, `Hammer`, `HangingMan`, `InvertedHammer`, `ShootingStar`, `LongLowerShadow`, `LongUpperShadow`, `MarubozuBlack`, `MarubozuWhite`, `SpinningTopBlack`, `SpinningTopWhite` |
-| 2 bars   | `DarkCloudCover`, `DojiStarBearish`, `DojiStarBullish`, `EngulfingBearish`, `EngulfingBullish`, `FallingWindow`, `RisingWindow`, `HaramiBearish`, `HaramiBullish`, `HaramiCrossBearish`, `HaramiCrossBullish`, `KickingBearish`, `KickingBullish`, `OnNeck`, `Piercing`, `TweezerBottom`, `TweezerTop` |
-| 3 bars   | `AbandonedBabyBearish`, `AbandonedBabyBullish`, `DownsideTasukiGap`, `UpsideTasukiGap`, `EveningStar`, `EveningDojiStar`, `MorningStar`, `MorningDojiStar`, `ThreeBlackCrows`, `ThreeWhiteSoldiers`, `TriStarBearish`, `TriStarBullish` |
-| 5 bars   | `FallingThreeMethods`, `RisingThreeMethods` |
-
-The trend filter (`upTrend`/`downTrend` inside `Candles`) requires SMA-50 of close, so any pattern that reads it cannot fire before bar 50 — matching the upstream Pine reference. Patterns that don't read trend (Doji, all Marubozu / Spinning Top variants, etc.) can fire from bar 1.
+| 1 bar    | `Doji`, `DragonFlyDoji`, `GraveStoneDoji`, `BearishHammerStick`, `BullishHammerStick`, `BearishInvertedHammerStick`, `BullishInvertedHammerStick`, `BearishMarubozu`, `BullishMarubozu`, `BearishSpinningTop`, `BullishSpinningTop` |
+| 2 bars   | `BearishEngulfingPattern`, `BullishEngulfingPattern`, `BearishHarami`, `BullishHarami`, `BearishHaramiCross`, `BullishHaramiCross`, `DarkCloudCover`, `PiercingLine` |
+| 3 bars   | `AbandonedBaby`, `DownsideTasukiGap`, `EveningStar`, `EveningDojiStar`, `MorningStar`, `MorningDojiStar`, `ThreeBlackCrows`, `ThreeWhiteSoldiers` |
+| 5 bars   | `HammerPattern`, `HammerPatternUnconfirmed`, `HangingMan`, `HangingManUnconfirmed`, `ShootingStar`, `ShootingStarUnconfirmed`, `TweezerBottom`, `TweezerTop` |
 
 ## Utilities
 

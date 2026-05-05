@@ -89,60 +89,51 @@ export { RelativeVolatilityIndex } from './src/relative-volatility-index';
 export { ChandeKrollStop } from './src/chande-kroll-stop';
 export { Median } from './src/median';
 
-// 44 candlestick pattern detectors. Each class is self-contained — no
-// shared base class, no shared context. Two import styles:
-//   1. Individual — `import { Doji, Hammer } from '@debut/indicators'`
+// Candlestick pattern detectors (technicalindicators-style port).
+// Each pattern owns its own state and exposes configurable thresholds.
+//   1. Individual — `import { Doji, BullishEngulfingPattern } from '@debut/indicators'`
 //   2. Namespaced — `import { Candlestick } from '@debut/indicators'; new Candlestick.Doji()`
-//
-// `AllCandlestickPatterns` is a separate self-contained scanner that
-// runs every pattern in one pass — useful for "what just fired?".
+//   3. Combined scanners — `AllCandlestickPatterns`, `BullishPatterns`, `BearishPatterns`
 import * as Candlestick from './src/candlestick';
 export { Candlestick };
 export {
-    AllCandlestickPatterns,
     Doji,
-    DragonflyDoji,
-    GravestoneDoji,
-    Hammer,
-    HangingMan,
-    InvertedHammer,
-    ShootingStar,
-    LongLowerShadow,
-    LongUpperShadow,
-    MarubozuBlack,
-    MarubozuWhite,
-    SpinningTopBlack,
-    SpinningTopWhite,
+    DragonFlyDoji,
+    GraveStoneDoji,
+    BearishHammerStick,
+    BullishHammerStick,
+    BearishInvertedHammerStick,
+    BullishInvertedHammerStick,
+    BearishMarubozu,
+    BullishMarubozu,
+    BearishSpinningTop,
+    BullishSpinningTop,
+    BearishEngulfingPattern,
+    BullishEngulfingPattern,
+    BearishHarami,
+    BullishHarami,
+    BearishHaramiCross,
+    BullishHaramiCross,
     DarkCloudCover,
-    DojiStarBearish,
-    DojiStarBullish,
-    EngulfingBearish,
-    EngulfingBullish,
-    FallingWindow,
-    RisingWindow,
-    HaramiBearish,
-    HaramiBullish,
-    HaramiCrossBearish,
-    HaramiCrossBullish,
-    KickingBearish,
-    KickingBullish,
-    OnNeck,
-    Piercing,
-    TweezerBottom,
-    TweezerTop,
-    AbandonedBabyBearish,
-    AbandonedBabyBullish,
+    PiercingLine,
+    AbandonedBaby,
     DownsideTasukiGap,
-    UpsideTasukiGap,
     EveningStar,
     EveningDojiStar,
     MorningStar,
     MorningDojiStar,
     ThreeBlackCrows,
     ThreeWhiteSoldiers,
-    TriStarBearish,
-    TriStarBullish,
-    FallingThreeMethods,
-    RisingThreeMethods,
+    HammerPattern,
+    HammerPatternUnconfirmed,
+    HangingMan,
+    HangingManUnconfirmed,
+    ShootingStar,
+    ShootingStarUnconfirmed,
+    TweezerBottom,
+    TweezerTop,
+    AllCandlestickPatterns,
+    BullishPatterns,
+    BearishPatterns,
 } from './src/candlestick';
 export type { CandlestickPatternName } from './src/candlestick';
