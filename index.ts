@@ -36,7 +36,15 @@ export { WWS } from './src/wws';
 export { SuperTrend } from './src/supertrend';
 export { CircularBuffer } from './src/providers/circular-buffer';
 export { Sampler } from './src/providers/sampler';
-export { VolumeProfile } from './src/volume-profile'; /** BETA UNSTABLE */
+export { VolumeProfile } from './src/volume-profile';
+export type {
+    Candle as VolumeProfileCandle,
+    VolumeProfileOptions,
+    VolumeProfileRow,
+    VolumeProfileSnapshot,
+    VolumeProfileSession,
+    VolumeProfileDistribution,
+} from './src/volume-profile';
 export { ChaikinOscillator } from './src/chaikin';
 export { AMA } from './src/ama';
 export { Ichimoku } from './src/ichimoku';

@@ -178,7 +178,7 @@ Below is the full catalog grouped by category. Names in `code style` are the exa
 | Ease of Movement | `EaseOfMovement` | Price change vs. volume. |
 | Klinger Oscillator | `Klinger` | Long-term money-flow oscillator. |
 | Net Volume | `NetVolume` | Signed volume by candle direction. |
-| Volume Profile *(beta)* | `VolumeProfile` | Volume distribution by price levels. |
+| Volume Profile | `VolumeProfile` | Session histogram with POC / VAH / VAL — see [Session Volume Profile](#session-volume-profile) below. |
 
 ### Candles & Pivots
 
@@ -289,6 +289,20 @@ const all = new Candlestick.AllCandlestickPatterns();
 | 2 bars   | `BearishEngulfingPattern`, `BullishEngulfingPattern`, `BearishHarami`, `BullishHarami`, `BearishHaramiCross`, `BullishHaramiCross`, `DarkCloudCover`, `PiercingLine` |
 | 3 bars   | `AbandonedBaby`, `DownsideTasukiGap`, `EveningStar`, `EveningDojiStar`, `MorningStar`, `MorningDojiStar`, `ThreeBlackCrows`, `ThreeWhiteSoldiers` |
 | 5 bars   | `HammerPattern`, `HammerPatternUnconfirmed`, `HangingMan`, `HangingManUnconfirmed`, `ShootingStar`, `ShootingStarUnconfirmed`, `TweezerBottom`, `TweezerTop` |
+
+## Session Volume Profile
+
+`VolumeProfile` aggregates traded volume across price rows and exposes **POC**, **VAH** / **VAL** with configurable `tickSize`, distribution, and session anchoring (`'daily'` by default — unbounded streams can't grow the row map forever).
+
+```ts
+import { VolumeProfile } from '@debut/indicators';
+const vp = new VolumeProfile({ tickSize: 0.5 });
+for (const bar of bars) {
+    const { poc, val, vah, total } = vp.nextValue(bar);
+}
+```
+
+Full options, formula, performance notes, and custom-session recipe: **[docs/VolumeProfile.md](./docs/VolumeProfile.md)**.
 
 ## Utilities
 
