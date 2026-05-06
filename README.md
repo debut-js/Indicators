@@ -199,6 +199,8 @@ Below is the full catalog grouped by category. Names in `code style` are the exa
 
 ## Candlestick Patterns
 
+Each is a streaming class:
+
 ```ts
 import { Doji, BullishEngulfingPattern, HammerPattern } from '@debut/indicators';
 
