@@ -13,7 +13,7 @@ A streaming, allocation-light technical-analysis toolkit for JavaScript / TypeSc
 - **Streaming-first.** O(period) per bar; no full-array recomputation.
 - **`momentValue` everywhere.** Ask "what would the value be if this bar closed now?" without mutating state.
 - **TypeScript.** Strongly-typed across the public surface.
-- **Cross-SDK validated.** 130+ vitest/jest tests cross-check our output against `lightweight-charts-indicators` (oakscriptjs / Pine Script reference) and `technicalindicators` with epsilon ≤ 1e-9.
+- **Cross-SDK validated.** 130+ jest tests cross-check our output against external reference libraries (`lwc` and `ti`) with epsilon ≤ 1e-9. See the **Test** column in the indicator tables below for which oracle each one is verified against.
 - **Tiny package.** Ships only the prebuilt `lib/` bundle — ~85 kB tarball.
 
 ## Install
@@ -66,129 +66,129 @@ sma.nextValue(8);     // 4.25 ← actual close=8 commits state
 
 ## Available indicators
 
-Below is the full catalog grouped by category. Names in `code style` are the exact named export from `@debut/indicators`.
+Below is the full catalog grouped by category. Names in `code style` are the exact named export from `@debut/indicators`. Linkable indicator names lead to a per-indicator doc page in [`docs/`](./docs). The **Test** column marks which external library the cross-SDK validation runs against — `` `lwc` `` = `lightweight-charts-indicators`, `` `ti` `` = `technicalindicators` (see [Cross-SDK validation](#cross-sdk-validation) for what that means).
 
 ### Moving Averages
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| Simple Moving Average | `SMA` | Arithmetic mean over a period. |
-| Exponential Moving Average | `EMA` | Weighted average emphasizing recent prices. |
-| Weighted Moving Average | `WMA` | Linearly increasing weights toward the latest bar. |
-| Linearly Weighted MA | `LWMA` | Linear weighting variant. |
-| Exponential Weighted MA | `EWMA` | Configurable α; lighter than EMA for tick smoothing. |
-| Smoothed Moving Average | `SMMA` | Wilder smoothing (α = 1/period). |
-| Wilder's Smoothed MA | `WEMA` | Same shape as `RMA`, included for compatibility. |
-| Welles Wilder's Smoothing | `WWS` | Classic Wilder smoothing. |
-| Adaptive Moving Average | `AMA` | Kaufman adaptive — speeds up in trend, slows in chop. |
-| Running Moving Average | `RMA` | α = 1/period; SMA-seeded. |
-| Hull Moving Average | `HMA` | Reduced-lag MA via WMA chaining. |
-| Double EMA | `DEMA` | 2 × EMA − EMA(EMA). |
-| Triple EMA | `TEMA` | Three-stage EMA reduction of lag. |
-| Arnaud Legoux MA | `ALMA` | Gaussian-weighted MA. |
-| Volume Weighted MA | `VWMA` | Each bar weighted by volume. |
-| McGinley Dynamic | `McGinleyDynamic` | Self-adjusting MA reacting to market speed. |
-| Least Squares MA | `LSMA` | Endpoint of rolling linear regression. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| [Simple Moving Average](./docs/SimpleMovingAverage.md) | `SMA` | `ti` | Arithmetic mean over a period. |
+| [Exponential Moving Average](./docs/ExponentialMovingAverage.md) | `EMA` | `ti` | Weighted average emphasizing recent prices. |
+| [Weighted Moving Average](./docs/WeightedMovingAverage.md) | `WMA` | `ti` | Linearly increasing weights toward the latest bar. |
+| [Linearly Weighted MA](./docs/LinearlyWeightedMovingAverage.md) | `LWMA` | | Linear weighting variant. |
+| [Exponential Weighted MA](./docs/ExponentialWeightedMovingAverage.md) | `EWMA` | | Configurable α; lighter than EMA for tick smoothing. |
+| [Smoothed Moving Average](./docs/SmoothedMovingAverage.md) | `SMMA` | | Wilder smoothing (α = 1/period). |
+| [Wilder's Smoothed MA](./docs/WildersSmoothedMovingAverage.md) | `WEMA` | `ti` | Same shape as `RMA`, included for compatibility. |
+| [Welles Wilder's Smoothing](./docs/WellesWildersSmoothingAverage.md) | `WWS` | | Classic Wilder smoothing. |
+| [Adaptive Moving Average](./docs/AdaptiveMovingAverage.md) | `AMA` | | Kaufman adaptive — speeds up in trend, slows in chop. |
+| Running Moving Average | `RMA` | | α = 1/period; SMA-seeded. |
+| Hull Moving Average | `HMA` | `lwc` | Reduced-lag MA via WMA chaining. |
+| Double EMA | `DEMA` | `lwc` | 2 × EMA − EMA(EMA). |
+| [Triple EMA](./docs/TEMA.md) | `TEMA` | | Three-stage EMA reduction of lag. |
+| Arnaud Legoux MA | `ALMA` | `lwc` | Gaussian-weighted MA. |
+| Volume Weighted MA | `VWMA` | `lwc` | Each bar weighted by volume. |
+| McGinley Dynamic | `McGinleyDynamic` | `lwc` | Self-adjusting MA reacting to market speed. |
+| Least Squares MA | `LSMA` | `lwc` | Endpoint of rolling linear regression. |
 
 ### Oscillators
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| Relative Strength Index | `RSI` | Classic 14-period momentum oscillator. |
-| Stochastic | `Stochastic` | Close vs. high-low range. |
-| Stochastic RSI | `StochasticRSI` | Stochastic applied to RSI. |
-| Commodity Channel Index | `CCI` | Deviation-from-mean cyclic oscillator. |
-| Williams %R | `Williams` | Inverse-stochastic momentum. |
-| Awesome Oscillator | `AO` | Bill Williams 5/34 SMA difference of HL2. |
-| Accelerator Oscillator | `AC` | Bill Williams AO derivative. |
-| Chande Momentum Oscillator | `CMO` | Wilder-style CMO. |
-| Chande MO (LWC) | `ChandeMO` | LWC reference variant; raw rolling sums. |
-| Detrended Price Oscillator | `DPO` | SMA-detrended price. |
-| Relative Vigor Index | `RVI` | SWMA-based vigor / signal pair. |
-| SMI Ergodic | `SMIErgodic` | Double-smoothed momentum (TSI without 100×). |
-| True Strength Index | `TSI` | Double-EMA momentum oscillator with signal. |
-| Bollinger Bands %B | `BBPercentB` | Price position relative to BB. |
-| Fisher Transform | `FisherTransform` | Gaussian-mapped price extremes. |
-| Ultimate Oscillator | `UltimateOscillator` | Multi-timeframe weighted momentum. |
-| Connor's RSI | `cRSI` | Composite RSI / streak / percent-rank. |
-| Relative Volatility Index | `RelativeVolatilityIndex` | RSI on stdev of close. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| [Relative Strength Index](./docs/RelativeStrengthIndex.md) | `RSI` | `ti` | Classic 14-period momentum oscillator. |
+| [Stochastic](./docs/StochasticOscillator.md) | `Stochastic` | `ti` | Close vs. high-low range. |
+| [Stochastic RSI](./docs/StochasticRsi.md) | `StochasticRSI` | `ti` | Stochastic applied to RSI. |
+| [Commodity Channel Index](./docs/CommodityChannelIndex.md) | `CCI` | `ti` | Deviation-from-mean cyclic oscillator. |
+| Williams %R | `Williams` | | Inverse-stochastic momentum. |
+| [Awesome Oscillator](./docs/AwesomeOscillator.md) | `AO` | `ti` | Bill Williams 5/34 SMA difference of HL2. |
+| [Accelerator Oscillator](./docs/AcceleratorOscillator.md) | `AC` | | Bill Williams AO derivative. |
+| [Chande Momentum Oscillator](./docs/CMO.md) | `CMO` | | Wilder-style CMO. |
+| Chande MO (LWC) | `ChandeMO` | `lwc` | LWC reference variant; raw rolling sums. |
+| [Detrended Price Oscillator](./docs/DPO.md) | `DPO` | | SMA-detrended price. |
+| Relative Vigor Index | `RVI` | `lwc` | SWMA-based vigor / signal pair. |
+| SMI Ergodic | `SMIErgodic` | `lwc` | Double-smoothed momentum (TSI without 100×). |
+| True Strength Index | `TSI` | `lwc` | Double-EMA momentum oscillator with signal. |
+| Bollinger Bands %B | `BBPercentB` | `lwc` | Price position relative to BB. |
+| Fisher Transform | `FisherTransform` | `lwc` | Gaussian-mapped price extremes. |
+| [Ultimate Oscillator](./docs/UltimateOscillator.md) | `UltimateOscillator` | | Multi-timeframe weighted momentum. |
+| [Connor's RSI](./docs/ConnorsRSI.md) | `cRSI` | | Composite RSI / streak / percent-rank. |
+| Relative Volatility Index | `RelativeVolatilityIndex` | `lwc` | RSI on stdev of close. |
 
 ### Momentum
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| MACD | `MACD` | Difference of two EMAs with signal/histogram. |
-| Momentum | `Momentum` | `close − close[length]`. |
-| Rate of Change | `ROC` | Percentage change over a period. |
-| Balance of Power | `BOP` | `(close − open) / (high − low)`. |
-| Bull-Bear Power | `BullBearPower` | Elder: `high + low − 2·EMA(close)`. |
-| Force Index | `ForceIndex` | Elder: signed price-volume impulse. |
-| Elder Ray | `ElderRay` | Bull / bear power split. |
-| Price Oscillator | `PriceOscillator` | Percent-PPO with signal/histogram. |
-| Coppock Curve | `CoppockCurve` | WMA of summed long/short ROCs. |
-| TRIX | `TRIX` | ROC of triple-smoothed EMA. |
-| KST | `KST` | "Know Sure Thing" weighted ROC sum + signal. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| [MACD](./docs/MovingAverageConvergenceDivergence.md) | `MACD` | `ti` | Difference of two EMAs with signal/histogram. |
+| Momentum | `Momentum` | `lwc` | `close − close[length]`. |
+| [Rate of Change](./docs/RateofChange.md) | `ROC` | `ti` | Percentage change over a period. |
+| Balance of Power | `BOP` | `lwc` | `(close − open) / (high − low)`. |
+| Bull-Bear Power | `BullBearPower` | `lwc` | Elder: `high + low − 2·EMA(close)`. |
+| [Force Index](./docs/ForceIndex.md) | `ForceIndex` | | Elder: signed price-volume impulse. |
+| [Elder Ray](./docs/ElderRay.md) | `ElderRay` | | Bull / bear power split. |
+| Price Oscillator | `PriceOscillator` | `lwc` | Percent-PPO with signal/histogram. |
+| Coppock Curve | `CoppockCurve` | `lwc` | WMA of summed long/short ROCs. |
+| [TRIX](./docs/TRIX.md) | `TRIX` | `ti` | ROC of triple-smoothed EMA. |
+| KST | `KST` | `lwc` | "Know Sure Thing" weighted ROC sum + signal. |
 
 ### Trend
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| Average Directional Index | `ADX` | Trend strength irrespective of direction. |
-| Directional Movement Index | `DMI` | `+DI`, `−DI`, ADX. |
-| Ichimoku Cloud | `Ichimoku` | Conversion / base / spans / lagging. |
-| Parabolic SAR | `PSAR` | Welles Wilder's trailing stop. |
-| Supertrend | `SuperTrend` | ATR-based dynamic support/resistance. |
-| Aroon | `Aroon` | Bars-since-extreme up/down lines. |
-| Choppiness | `Choppiness` | Range-vs-volatility chop measure. |
-| Mass Index | `MassIndex` | Reversal detection via H-L EMA ratio. |
-| Vortex | `Vortex` | VI+ / VI− directional pair. |
-| Trend Strength Index | `TrendStrengthIndex` | Pearson correlation of close vs. bar index. |
-| Chande Kroll Stop | `ChandeKrollStop` | Long / short ATR-based stop levels. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| [Average Directional Index](./docs/AverageDirectionalIndex.md) | `ADX` | `ti` | Trend strength irrespective of direction. |
+| [Directional Movement Index](./docs/DMI.md) | `DMI` | | `+DI`, `−DI`, ADX. |
+| [Ichimoku Cloud](./docs/IchimokuCloud.md) | `Ichimoku` | | Conversion / base / spans / lagging. |
+| [Parabolic SAR](./docs/ParabolicStopAndReverse.md) | `PSAR` | `ti` | Welles Wilder's trailing stop. |
+| [Supertrend](./docs/SuperTrend.md) | `SuperTrend` | | ATR-based dynamic support/resistance. |
+| Aroon | `Aroon` | `lwc` | Bars-since-extreme up/down lines. |
+| Choppiness | `Choppiness` | `lwc` | Range-vs-volatility chop measure. |
+| Mass Index | `MassIndex` | `lwc` | Reversal detection via H-L EMA ratio. |
+| Vortex | `Vortex` | `lwc` | VI+ / VI− directional pair. |
+| Trend Strength Index | `TrendStrengthIndex` | `lwc` | Pearson correlation of close vs. bar index. |
+| Chande Kroll Stop | `ChandeKrollStop` | `lwc` | Long / short ATR-based stop levels. |
 
 ### Volatility
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| Average True Range | `ATR` | Wilder ATR with selectable smoothing. |
-| Average Daily Range | `ADR` | SMA of `high − low`. |
-| Historical Volatility | `HistoricalVolatility` | Annualized stdev of log returns. |
-| Bollinger BandWidth | `BBBandWidth` | `(upper − lower) / basis × 100`. |
-| Standard Deviation | `StandardDeviation` | Streaming biased stdev provider. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| [Average True Range](./docs/AverageTrueRange.md) | `ATR` | `ti` | Wilder ATR with selectable smoothing. |
+| Average Daily Range | `ADR` | `lwc` | SMA of `high − low`. |
+| Historical Volatility | `HistoricalVolatility` | `lwc` | Annualized stdev of log returns. |
+| Bollinger BandWidth | `BBBandWidth` | `lwc` | `(upper − lower) / basis × 100`. |
+| Standard Deviation | `StandardDeviation` | | Streaming biased stdev provider. |
 
 ### Channels & Bands
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| Bollinger Bands | `BollingerBands` | SMA ± k × stdev. |
-| Donchian Channels | `DC` | Highest-high / lowest-low envelope. |
-| Keltner Channel | `KeltnerChannel` | EMA / ATR envelope. |
-| Envelopes | `Envelopes` | Fixed-percentage MA bands. |
-| Median (with bands ready upstream) | `Median` | Rolling median of HL2. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| [Bollinger Bands](./docs/BollingerBands.md) | `BollingerBands` | `ti` | SMA ± k × stdev. |
+| [Donchian Channels](./docs/DonchianChannels.md) | `DC` | | Highest-high / lowest-low envelope. |
+| [Keltner Channel](./docs/KeltnerChannel.md) | `KeltnerChannel` | `ti` | EMA / ATR envelope. |
+| [Envelopes](./docs/Envelopes.md) | `Envelopes` | `ti` | Fixed-percentage MA bands. |
+| Median (with bands ready upstream) | `Median` | `lwc` | Rolling median of HL2. |
 
 ### Volume
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| On Balance Volume | `OBV` | Cumulative signed volume. |
-| Money Flow Index | `MFI` | Volume-weighted RSI. |
-| Price Volume Trend | `PVT` | Volume scaled by relative price change. |
-| Volume Oscillator | `VolumeOscillator` | Difference between volume EMAs. |
-| Chaikin Oscillator | `ChaikinOscillator` | EMA spread of A/D line. |
-| Chaikin Money Flow | `ChaikinMF` | A/D divided by volume over a window. |
-| Ease of Movement | `EaseOfMovement` | Price change vs. volume. |
-| Klinger Oscillator | `Klinger` | Long-term money-flow oscillator. |
-| Net Volume | `NetVolume` | Signed volume by candle direction. |
-| Volume Profile | `VolumeProfile` | Session histogram with POC / VAH / VAL — see [Session Volume Profile](#session-volume-profile) below. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| On Balance Volume | `OBV` | `lwc` | Cumulative signed volume. |
+| [Money Flow Index](./docs/MoneyFlowIndex.md) | `MFI` | `ti` | Volume-weighted RSI. |
+| Price Volume Trend | `PVT` | `lwc` | Volume scaled by relative price change. |
+| [Volume Oscillator](./docs/VolumeOscillator.md) | `VolumeOscillator` | `ti` | Difference between volume EMAs. |
+| [Chaikin Oscillator](./docs/ChaikinOscillator.md) | `ChaikinOscillator` | | EMA spread of A/D line. |
+| Chaikin Money Flow | `ChaikinMF` | `lwc` | A/D divided by volume over a window. |
+| Ease of Movement | `EaseOfMovement` | `lwc` | Price change vs. volume. |
+| Klinger Oscillator | `Klinger` | `lwc` | Long-term money-flow oscillator. |
+| Net Volume | `NetVolume` | `lwc` | Signed volume by candle direction. |
+| [Volume Profile](./docs/VolumeProfile.md) | `VolumeProfile` | | Session histogram with POC / VAH / VAL. |
 
 ### Candles & Pivots
 
-| Indicator | Export | Description |
-|-----------|--------|-------------|
-| Heiken Ashi | `HeikenAshi` | Smoothed candle stream. |
-| Fractal | `Fractal` | Bill Williams 5-bar fractals. |
-| Pivot Levels | `Pivot` | Classic / Woodie / Camarilla / Fibonacci. |
-| Trend Lines | `TrendLines` | Pivot-derived trend line detection. |
-| Extremums | `Extremums` | Fractal-style local extrema provider. |
+| Indicator | Export | Test | Description |
+|-----------|--------|------|-------------|
+| Heiken Ashi | `HeikenAshi` | | Smoothed candle stream. |
+| [Fractal](./docs/Fractal.md) | `Fractal` | | Bill Williams 5-bar fractals. |
+| [Pivot Levels](./docs/PivotPointLevels.md) | `Pivot` | | Classic / Woodie / Camarilla / Fibonacci. |
+| Trend Lines | `TrendLines` | | Pivot-derived trend line detection. |
+| Extremums | `Extremums` | | Fractal-style local extrema provider. |
 
 ### Move / Wave (custom)
 
@@ -219,7 +219,7 @@ for (const bar of bars) {
 
 ### Configurable thresholds
 
-Each pattern accepts an options bag in its constructor. The defaults match `technicalindicators` exactly; tighten or loosen them as you see fit.
+Each pattern accepts an options bag in its constructor. The defaults match the `ti` reference exactly; tighten or loosen them as you see fit.
 
 | Option | Used by | Default | Description |
 |--------|---------|---------|-------------|
@@ -321,7 +321,7 @@ Every ported indicator and candlestick pattern has a vitest-style spec in `tests
 
 1. Generates deterministic synthetic OHLCV bars with a seeded LCG (see `tests/lwc-fixtures.ts`).
 2. Runs them through the streaming `@debut/indicators` class.
-3. Runs the same bars through the corresponding [`lightweight-charts-indicators`](https://github.com/deepentropy/lightweight-charts-indicators) `calculate()` (or `technicalindicators` for the older specs).
+3. Runs the same bars through the corresponding `lwc` `calculate()` (or `ti` for the older specs) — see the **Test** column in each indicator table for which oracle that pattern is matched against.
 4. Asserts numeric equality with epsilon ≤ 1e-9 (or set membership for boolean pattern firings).
 
 Run `npm test` to execute the full suite.
