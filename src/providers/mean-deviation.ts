@@ -1,5 +1,6 @@
 import { CircularBuffer } from './circular-buffer';
-export class MeanDeviationProvider {
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from '../stateful-indicator';
+export class MeanDeviationProvider implements StatefulIndicator<GenericIndicatorState> {
     private values: CircularBuffer;
 
     constructor(private period: number) {
@@ -7,7 +8,7 @@ export class MeanDeviationProvider {
     }
 
     nextValue(typicalPrice: number, average?: number) {
-        if (!average) {
+        if (average === undefined) {
             this.values.push(typicalPrice);
             return void 0;
         }
@@ -46,5 +47,25 @@ export class MeanDeviationProvider {
 
     private positiveDelta(a: number, b: number) {
         return a > b ? a - b : b - a;
+    }
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        delete (this as any).momentValue;
+        if (this.values.loaded === 0) return;
+
+        this.nextValue = this.pureNextValue;
+        this.momentValue = this.pureMomentValue;
     }
 }

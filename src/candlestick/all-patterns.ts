@@ -17,6 +17,7 @@ import {
     ShootingStar, ShootingStarUnconfirmed,
     TweezerBottom, TweezerTop,
 } from './patterns';
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from '../stateful-indicator';
 
 /** Pattern names reported by the combined detectors. */
 export type CandlestickPatternName =
@@ -57,7 +58,7 @@ interface NamedPattern {
  * allocate per-pattern buffers — only the small predicate-state
  * fields each class needs.
  */
-export class AllCandlestickPatterns {
+export class AllCandlestickPatterns implements StatefulIndicator<GenericIndicatorState> {
     private patterns: NamedPattern[];
 
     constructor(opts: { precision?: number; shadowToBodyRatio?: number; minShadowToBodyRatio?: number; equalityTolerance?: number } = {}) {
@@ -120,10 +121,18 @@ export class AllCandlestickPatterns {
         }
         return fired;
     }
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
+    }
 }
 
 /** Bullish-only variants: subset of patterns that signal long entries. */
-export class BullishPatterns {
+export class BullishPatterns implements StatefulIndicator<GenericIndicatorState> {
     private patterns: NamedPattern[];
 
     constructor(opts: { precision?: number; shadowToBodyRatio?: number; equalityTolerance?: number } = {}) {
@@ -160,10 +169,18 @@ export class BullishPatterns {
         }
         return false;
     }
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
+    }
 }
 
 /** Bearish-only variants: subset of patterns that signal short entries. */
-export class BearishPatterns {
+export class BearishPatterns implements StatefulIndicator<GenericIndicatorState> {
     private patterns: NamedPattern[];
 
     constructor(opts: { precision?: number; shadowToBodyRatio?: number; equalityTolerance?: number } = {}) {
@@ -199,5 +216,13 @@ export class BearishPatterns {
             if (this.patterns[i].pattern.momentValue(open, high, low, close) === true) return true;
         }
         return false;
+    }
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

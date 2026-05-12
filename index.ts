@@ -1,5 +1,6 @@
 import * as TrendLines from './src/trendlines';
 
+export type { StatefulIndicator } from './src/stateful-indicator';
 export { Extremums } from './src/providers/extremum';
 export { TrendLines };
 export { Level, UniLevel } from './src/providers/levels';

@@ -1,4 +1,13 @@
-import { CircularBuffer } from '../providers/circular-buffer';
+import { CircularBuffer, CircularBufferState } from '../providers/circular-buffer';
+import { StatefulIndicator } from '../stateful-indicator';
+
+export interface OhlcBufferState {
+    required: number;
+    opens: CircularBufferState<number>;
+    highs: CircularBufferState<number>;
+    lows: CircularBufferState<number>;
+    closes: CircularBufferState<number>;
+}
 
 /**
  * Tiny shared utilities for candlestick pattern detectors.
@@ -56,7 +65,7 @@ export type { OhlcView };
  * buffer. The view is a small object literal — no array
  * allocation on the hot path.
  */
-export class OhlcBuffer implements OhlcView {
+export class OhlcBuffer implements OhlcView, StatefulIndicator<OhlcBufferState> {
     private opens: CircularBuffer;
     private highs: CircularBuffer;
     private lows: CircularBuffer;
@@ -180,6 +189,29 @@ export class OhlcBuffer implements OhlcView {
             low: (i: number) => lookup(lows, i, low),
             close: (i: number) => lookup(closes, i, close),
         };
+    }
+
+    dumpState(): OhlcBufferState {
+        return {
+            required: this.required,
+            opens: this.opens.dumpState(),
+            highs: this.highs.dumpState(),
+            lows: this.lows.dumpState(),
+            closes: this.closes.dumpState(),
+        };
+    }
+
+    restoreState(state: OhlcBufferState): this {
+        if (state.required !== this.required) {
+            throw new Error(`OhlcBuffer required mismatch: expected ${this.required}, got ${state.required}`);
+        }
+
+        this.opens.restoreState(state.opens);
+        this.highs.restoreState(state.highs);
+        this.lows.restoreState(state.lows);
+        this.closes.restoreState(state.closes);
+
+        return this;
     }
 }
 

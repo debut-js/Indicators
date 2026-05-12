@@ -2,6 +2,7 @@ import { getTrueRange } from './providers/true-range';
 import { WEMA } from './wema';
 import { WWS } from './wws';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * ADX values help traders identify the strongest and most profitable trends to trade.
  * The values are also important for distinguishing between trending and non-trending conditions.
@@ -13,7 +14,7 @@ import { WWS } from './wws';
  * 50-75	Very Strong Trend
  * 75-100	Extremely Strong Trend
  */
-export class ADX {
+export class ADX  implements StatefulIndicator<GenericIndicatorState> {
     private prevHigh: number;
     private prevLow: number;
     private prevClose: number;
@@ -111,5 +112,14 @@ export class ADX {
         const diAbs = pDI > nDI ? pDI - nDI : nDI - pDI;
 
         return { adx: this.wema.momentValue(100 * (diAbs / (pDI + nDI))), pdi: pDI, mdi: nDI };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

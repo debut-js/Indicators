@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Least Squares Moving Average (LSMA) — also known as a "Linear
  * Regression Line". Fits a least-squares line through the last
@@ -11,7 +12,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * to compute the regression sums). The x-axis sums are constant for a
  * fixed window length so they're memoised.
  */
-export class LSMA {
+export class LSMA  implements StatefulIndicator<GenericIndicatorState> {
     private buffer: CircularBuffer;
     private sumX: number;
     private sumX2: number;
@@ -73,5 +74,14 @@ export class LSMA {
         const intercept = (sumY - slope * this.sumX) / n;
         const x = n - 1 - this.offset;
         return intercept + slope * x;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

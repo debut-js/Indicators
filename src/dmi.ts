@@ -1,6 +1,7 @@
 import { getTrueRange } from './providers/true-range';
 import { WEMA } from './wema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Directional Movement Index (DMI)
  *
@@ -11,7 +12,7 @@ import { WEMA } from './wema';
  * - -DI: Smoothed negative directional movement
  * - ADX: Average Directional Index (optional)
  */
-export class DMI {
+export class DMI  implements StatefulIndicator<GenericIndicatorState> {
     private prevHigh: number;
     private prevLow: number;
     private prevClose: number;
@@ -113,5 +114,14 @@ export class DMI {
         const diSum = plusDI + minusDI;
         const adx = this.wemaADX.momentValue(100 * (diDiff / diSum));
         return { plusDI, minusDI, adx };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 } 

@@ -1,3 +1,5 @@
+import { OptionalNumberState, StatefulIndicator, dumpOptionalNumber, restoreOptionalNumber } from './stateful-indicator';
+
 /**
  * Volume Profile — distribution of traded volume across price levels
  * over a session.
@@ -102,10 +104,26 @@ export interface VolumeProfileSnapshot {
     total: number;
 }
 
+export interface VolumeProfileState {
+    tickSize: number;
+    valueAreaPercent: number;
+    distribution: VolumeProfileDistribution;
+    session: VolumeProfileSession;
+    lookback: OptionalNumberState;
+    rows: Array<[number, number]>;
+    sortedIdx: number[];
+    total: number;
+    sessionStartMs: OptionalNumberState;
+    pocIdx: OptionalNumberState;
+    pocVol: number;
+    pocDirty: boolean;
+    history: Candle[];
+}
+
 const MS_PER_DAY = 86400000;
 const MS_PER_WEEK = 7 * MS_PER_DAY;
 
-export class VolumeProfile {
+export class VolumeProfile implements StatefulIndicator<VolumeProfileState> {
     private readonly tickSize: number;
     private readonly valueAreaPercent: number;
     private readonly distribution: VolumeProfileDistribution;
@@ -224,6 +242,49 @@ export class VolumeProfile {
         this.pocDirty = false;
         this.sessionStartMs = undefined;
         this.history = [];
+    }
+
+    dumpState(): VolumeProfileState {
+        return {
+            tickSize: this.tickSize,
+            valueAreaPercent: this.valueAreaPercent,
+            distribution: this.distribution,
+            session: this.session,
+            lookback: dumpOptionalNumber(this.lookback),
+            rows: Array.from(this.rows.entries()),
+            sortedIdx: this.sortedIdx.slice(),
+            total: this.total,
+            sessionStartMs: dumpOptionalNumber(this.sessionStartMs),
+            pocIdx: dumpOptionalNumber(this.pocIdx),
+            pocVol: this.pocVol,
+            pocDirty: this.pocDirty,
+            history: this.history.map((candle: Candle): Candle => ({ ...candle })),
+        };
+    }
+
+    restoreState(state: VolumeProfileState): this {
+        if (state.tickSize !== this.tickSize) {
+            throw new Error(`VolumeProfile tickSize mismatch: expected ${this.tickSize}, got ${state.tickSize}`);
+        }
+        if (state.valueAreaPercent !== this.valueAreaPercent) {
+            throw new Error(
+                `VolumeProfile valueAreaPercent mismatch: expected ${this.valueAreaPercent}, got ${state.valueAreaPercent}`,
+            );
+        }
+        if (state.distribution !== this.distribution) {
+            throw new Error(`VolumeProfile distribution mismatch: expected ${this.distribution}, got ${state.distribution}`);
+        }
+
+        this.rows = new Map<number, number>(state.rows);
+        this.sortedIdx = state.sortedIdx.slice();
+        this.total = state.total;
+        this.sessionStartMs = restoreOptionalNumber(state.sessionStartMs);
+        this.pocIdx = restoreOptionalNumber(state.pocIdx);
+        this.pocVol = state.pocVol;
+        this.pocDirty = state.pocDirty;
+        this.history = state.history.map((candle: Candle): Candle => ({ ...candle }));
+
+        return this;
     }
 
     /** Total volume aggregated in the current session. */

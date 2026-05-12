@@ -1,5 +1,6 @@
 import { SMA } from './sma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Ease of Movement (EOM)
  *
@@ -11,7 +12,7 @@ import { SMA } from './sma';
  * inputs. The first bar has no `prev_hl2`, so `raw` is undefined for
  * that bar and the SMA only starts consuming from bar 1.
  */
-export class EaseOfMovement {
+export class EaseOfMovement  implements StatefulIndicator<GenericIndicatorState> {
     private prevHl2: number | undefined;
     private sma: SMA;
 
@@ -46,5 +47,14 @@ export class EaseOfMovement {
         const raw = (change * (high - low)) / denom;
         if (!isFinite(raw)) return;
         return this.sma.momentValue(raw);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

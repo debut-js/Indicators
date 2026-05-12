@@ -1,10 +1,11 @@
 import { ATR } from './atr';
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * SuperTrend indicator is one of the hybrid custom tools that show the current trend in the market.
  * The indicator name stands for Multi Time Frame SuperTrend.
  * The tool can show the direction of the trend on several timeframes at once.
  */
-export class SuperTrend {
+export class SuperTrend  implements StatefulIndicator<GenericIndicatorState> {
     private atr: ATR;
     private prevSuper: number;
     private prevUpper: number;
@@ -74,5 +75,14 @@ export class SuperTrend {
         const direction = superTrend === upper ? 1 : -1;
 
         return { upper, lower, superTrend, direction };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

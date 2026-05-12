@@ -1,5 +1,6 @@
 import { BollingerBands } from './bands';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Bollinger BandWidth
  *
@@ -9,7 +10,7 @@ import { BollingerBands } from './bands';
  * for detecting volatility squeezes and expansions. Returns `undefined`
  * during BB warmup and when the basis is zero.
  */
-export class BBBandWidth {
+export class BBBandWidth  implements StatefulIndicator<GenericIndicatorState> {
     private bb: BollingerBands;
 
     constructor(period = 20, stdDev = 2) {
@@ -26,5 +27,14 @@ export class BBBandWidth {
         const bb = this.bb.momentValue(price);
         if (!bb || bb.middle === 0) return;
         return ((bb.upper - bb.lower) / bb.middle) * 100;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

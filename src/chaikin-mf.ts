@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Chaikin Money Flow (CMF)
  *
@@ -10,7 +11,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * Emits from bar `length-1` onwards. Returns 0 for a window with no
  * volume (matching the oakscriptjs reference's safeguard).
  */
-export class ChaikinMF {
+export class ChaikinMF  implements StatefulIndicator<GenericIndicatorState> {
     private adBuf: CircularBuffer;
     private volBuf: CircularBuffer;
     private sumAd = 0;
@@ -64,5 +65,14 @@ export class ChaikinMF {
 
         if (sumVol === 0) return 0;
         return sumAd / sumVol;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

@@ -1,5 +1,6 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Triple Exponential Moving Average (TEMA)
  *
@@ -9,7 +10,7 @@ import { EMA } from './ema';
  *   EMA2 = EMA of EMA1
  *   EMA3 = EMA of EMA2
  */
-export class TEMA {
+export class TEMA  implements StatefulIndicator<GenericIndicatorState> {
     private ema1: EMA;
     private ema2: EMA;
     private ema3: EMA;
@@ -56,4 +57,28 @@ export class TEMA {
         const ema3 = this.ema3.momentValue(ema2);
         return 3 * ema1 - 3 * ema2 + ema3;
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.period * 2) return;
+
+        this.nextValue = (value: number) => {
+            const ema1 = this.ema1.nextValue(value);
+            const ema2 = this.ema2.nextValue(ema1);
+            const ema3 = this.ema3.nextValue(ema2);
+            return 3 * ema1 - 3 * ema2 + ema3;
+        };
+    }
+}

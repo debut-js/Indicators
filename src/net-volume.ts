@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Net Volume
  *
@@ -8,7 +9,7 @@
  * Pure per-bar computation; no state. Used as a simple bullish/bearish
  * volume bias.
  */
-export class NetVolume {
+export class NetVolume  implements StatefulIndicator<GenericIndicatorState> {
     nextValue(open: number, close: number, volume: number) {
         if (close > open) return volume;
         if (close < open) return -volume;
@@ -17,5 +18,14 @@ export class NetVolume {
 
     momentValue(open: number, close: number, volume: number) {
         return this.nextValue(open, close, volume);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

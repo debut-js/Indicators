@@ -1,7 +1,8 @@
 import { percentChange } from './utils';
 import { CircularBuffer } from './providers/circular-buffer';
 
-export class Move {
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
+export class Move  implements StatefulIndicator<GenericIndicatorState> {
     private changes: CircularBuffer;
     private prevPrice: number;
     private value = 0;
@@ -32,5 +33,14 @@ export class Move {
         this.value -= this.changes.push(change);
 
         return this.value;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

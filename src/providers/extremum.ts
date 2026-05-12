@@ -1,4 +1,10 @@
-import { CircularBuffer } from './circular-buffer';
+import { CircularBuffer, CircularBufferState } from './circular-buffer';
+
+export interface ExtremumsState extends CircularBufferState<number> {
+    period: number;
+    mode: 'max' | 'min';
+    prevIx: number;
+}
 
 export class Extremums extends CircularBuffer {
     private comparator: Function;
@@ -88,5 +94,28 @@ export class Extremums extends CircularBuffer {
         this.prevIx = null;
 
         return null;
+    }
+
+
+    dumpState(): ExtremumsState {
+        return {
+            ...super.dumpState(),
+            period: this.period,
+            mode: this.mode,
+            prevIx: this.prevIx,
+        };
+    }
+
+    restoreState(state: CircularBufferState<number> | ExtremumsState): this {
+        super.restoreState(state);
+
+        if ('period' in state) this.period = state.period;
+        if ('mode' in state) {
+            this.mode = state.mode;
+            this.comparator = this.mode === 'max' ? this.maxComporator : this.mminComporator;
+        }
+        if ('prevIx' in state) this.prevIx = state.prevIx;
+
+        return this;
     }
 }

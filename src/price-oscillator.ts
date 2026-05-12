@@ -1,6 +1,7 @@
 import { EMA } from './ema';
 import { SMA } from './sma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Price Oscillator (PPO)
  *
@@ -12,7 +13,7 @@ import { SMA } from './sma';
  * Price Oscillator) and SMA-based smoothing. Defaults follow LWC:
  * short=12, long=26, signal=9.
  */
-export class PriceOscillator {
+export class PriceOscillator  implements StatefulIndicator<GenericIndicatorState> {
     private shortMA: EMA | SMA;
     private longMA: EMA | SMA;
     private signalMA: EMA | SMA;
@@ -47,5 +48,14 @@ export class PriceOscillator {
         const signal = this.signalMA.momentValue(ppo);
         const histogram = signal === undefined ? undefined : ppo - signal;
         return { ppo, signal, histogram };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

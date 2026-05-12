@@ -1,7 +1,8 @@
 import { SMA } from '../sma';
 import { CircularBuffer } from './circular-buffer';
 
-export class Correlation {
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from '../stateful-indicator';
+export class Correlation  implements StatefulIndicator<GenericIndicatorState> {
     private pricesX: CircularBuffer;
     private pricesY: CircularBuffer;
     private filled: boolean;
@@ -38,5 +39,14 @@ export class Correlation {
         }
 
         return SSxy / Math.sqrt(SSxx * SSyy);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

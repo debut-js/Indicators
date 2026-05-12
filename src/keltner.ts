@@ -1,6 +1,7 @@
 import { EMA } from './ema';
 import { ATR } from './atr';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Keltner Channel
  *
@@ -10,7 +11,7 @@ import { ATR } from './atr';
  * - Middle Band: EMA
  * - Lower Band: EMA - (ATR * multiplier)
  */
-export class KeltnerChannel {
+export class KeltnerChannel  implements StatefulIndicator<GenericIndicatorState> {
     private ema: EMA;
     private atr: ATR;
     private fill = 0;
@@ -62,4 +63,29 @@ export class KeltnerChannel {
         const lower = middle - this.multiplier * atr;
         return { lower, middle, upper };
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.period) return;
+
+        this.nextValue = (high: number, low: number, close: number) => {
+            const middle = this.ema.nextValue(close);
+            const atr = this.atr.nextValue(high, low, close);
+            const upper = middle + this.multiplier * atr;
+            const lower = middle - this.multiplier * atr;
+            return { lower, middle, upper };
+        };
+    }
+}

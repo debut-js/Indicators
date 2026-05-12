@@ -197,6 +197,35 @@ Below is the full catalog grouped by category. Names in `code style` are the exa
 | Move | `Move` | Direction move with minimum power `p`. |
 | Wave | `Wave` | Bullish/bearish candle series with power `p`. |
 
+## Runtime state save & restore
+
+Every stateful indicator exposes two methods:
+
+- `dumpState()` returns a JSON-safe snapshot of all internal runtime state.
+- `restoreState(state)` restores that snapshot into a new indicator instance and returns the instance.
+
+The snapshot includes nested providers and rolling buffers such as `CircularBuffer`, so an indicator can continue after a process restart without replaying the full history. Constructor parameters are still part of the indicator configuration: restore state into an instance created with the same period/options that produced the snapshot.
+
+```ts
+import { EMA } from '@debut/indicators';
+
+const ema = new EMA(20);
+
+for (const close of history) {
+    ema.nextValue(close);
+}
+
+// Persist this string in your own runtime storage: database, file, Redis, etc.
+const serialized = JSON.stringify(ema.dumpState());
+
+// Later, after a restart:
+const restored = new EMA(20).restoreState(JSON.parse(serialized));
+
+const liveValue = restored.nextValue(nextClose);
+```
+
+For live systems, save the state after committing each closed bar, together with the indicator configuration and stream identity. On startup, recreate each indicator with the same constructor arguments, call `restoreState(...)`, then continue feeding new bars through `nextValue(...)`.
+
 ## Candlestick Patterns
 
 Each is a streaming class:

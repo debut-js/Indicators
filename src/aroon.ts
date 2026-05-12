@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Aroon Indicator
  *
@@ -13,7 +14,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * Returns `undefined` until the window is fully primed (i.e. `length + 1`
  * bars have been observed).
  */
-export class Aroon {
+export class Aroon  implements StatefulIndicator<GenericIndicatorState> {
     private highs: CircularBuffer;
     private lows: CircularBuffer;
     private windowSize: number;
@@ -103,5 +104,14 @@ export class Aroon {
         const down = (100 * (this.period - barsSinceLowest)) / this.period;
 
         return { up, down };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

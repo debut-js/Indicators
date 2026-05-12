@@ -1,5 +1,6 @@
 import { WMA } from './wma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Hull Moving Average (HMA)
  *
@@ -8,7 +9,7 @@ import { WMA } from './wma';
  *
  * Streaming-friendly: chains three WMAs.
  */
-export class HMA {
+export class HMA  implements StatefulIndicator<GenericIndicatorState> {
     private halfWma: WMA;
     private fullWma: WMA;
     private outerWma: WMA;
@@ -41,5 +42,14 @@ export class HMA {
         }
 
         return this.outerWma.momentValue(2 * w1 - w2);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

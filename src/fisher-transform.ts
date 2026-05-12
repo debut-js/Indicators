@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Fisher Transform
  *
@@ -11,7 +12,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * The Fisher line is emitted from bar `length-1`; the trigger from bar
  * `length` (one bar later, since it's a one-bar lag of Fisher).
  */
-export class FisherTransform {
+export class FisherTransform  implements StatefulIndicator<GenericIndicatorState> {
     private highs: CircularBuffer;
     private lows: CircularBuffer;
     private value = 0;
@@ -97,5 +98,14 @@ export class FisherTransform {
         const fisher = this.barCount + 1 >= this.period ? fish : undefined;
         const trigger = this.firstFishEmitted ? this.fish : undefined;
         return { fisher, trigger };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

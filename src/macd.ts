@@ -1,11 +1,12 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /*
 How work MACD?
 https://www.investopedia.com/terms/m/macd.asp#:~:text=The%20MACD%20is%20calculated%20by,for%20buy%20and%20sell%20signals.
 */
 
-export class MACD {
+export class MACD  implements StatefulIndicator<GenericIndicatorState> {
     private emaFastIndicator: EMA;
     private emaSlowIndicator: EMA;
     private emaSignalIndicator: EMA;
@@ -50,5 +51,14 @@ export class MACD {
             signal,
             histogram,
         };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

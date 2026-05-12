@@ -1,12 +1,13 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Elder Ray Index (Bull Power / Bear Power)
  *
  * Bull Power = High - EMA
  * Bear Power = Low - EMA
  */
-export class ElderRay {
+export class ElderRay  implements StatefulIndicator<GenericIndicatorState> {
     private ema: EMA;
     private fill = 0;
 
@@ -46,4 +47,26 @@ export class ElderRay {
         const ema = this.ema.momentValue(close);
         return { bull: high - ema, bear: low - ema };
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.period) return;
+
+        this.nextValue = (high: number, low: number, close: number) => {
+            const ema = this.ema.nextValue(close);
+            return { bull: high - ema, bear: low - ema };
+        };
+    }
+}

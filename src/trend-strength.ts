@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Trend Strength Index
  *
@@ -14,7 +15,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * near -1 a strong downtrend. Returns `undefined` when the window has
  * a zero-variance price series (degenerate denominator).
  */
-export class TrendStrengthIndex {
+export class TrendStrengthIndex  implements StatefulIndicator<GenericIndicatorState> {
     private buffer: CircularBuffer;
     private xMean: number;
     private xDevSqSum: number; // sum of (x - xMean)^2 for x = 0..length-1, constant
@@ -79,5 +80,14 @@ export class TrendStrengthIndex {
         const denom = Math.sqrt(this.xDevSqSum * yDevSq);
         if (denom === 0) return;
         return cov / denom;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

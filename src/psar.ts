@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  In stock and securities market technical analysis, parabolic SAR (parabolic stop and reverse)
  is a method devised by J. Welles Wilder, Jr., to find potential reversals in the market price
@@ -16,7 +17,7 @@
  A parabola below the price may be used as support, whereas a parabola above the price may represent resistance.
  * */
 
-export class PSAR {
+export class PSAR  implements StatefulIndicator<GenericIndicatorState> {
     private start: number;
     private acceleration: number;
     private max: number;
@@ -158,5 +159,14 @@ export class PSAR {
         }
 
         return psar;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

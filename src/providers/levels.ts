@@ -3,6 +3,7 @@ import { EMA } from '../ema';
 import { SMA } from '../sma';
 import { Sampler, IndicatorConstructor } from './sampler';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from '../stateful-indicator';
 /**
  * Level creation for dynamic data, upper and lower (configurated)
  */
@@ -46,7 +47,7 @@ export class UniLevel<T extends IndicatorConstructor> {
  * Smoothed level creation for dynamic data
  * @deprecated
  */
-export class Level {
+export class Level  implements StatefulIndicator<GenericIndicatorState> {
     private sample1Up: WEMA | SMA | EMA;
     private sample2Up: WEMA | SMA | EMA;
     private sample3Up: WEMA | SMA | EMA;
@@ -144,5 +145,14 @@ export class Level {
             case 'SMA':
                 return new SMA(this.period);
         }
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

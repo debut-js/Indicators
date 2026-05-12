@@ -1,10 +1,11 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * On Balance Volume (OBV)
  *
  * Cumulative indicator that adds volume on up bars and subtracts it on down bars.
  * The first bar contributes 0 (no previous close to compare against).
  */
-export class OBV {
+export class OBV  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private value = 0;
 
@@ -36,5 +37,14 @@ export class OBV {
             return this.value - volume;
         }
         return this.value;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

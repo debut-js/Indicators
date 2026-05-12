@@ -1,11 +1,12 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Money Flow Index (MFI) is a movement indicator used in technical analysis that looks at time and price
  * to measure the trading pressure — buying or selling. It is also called volume-weighted
  * Relative Strength Index (RSI), as it includes volume, unlike RSI, which only incorporates price.
  */
-export class MFI {
+export class MFI  implements StatefulIndicator<GenericIndicatorState> {
     private positiveMoneyFlowSum = 0;
     private negativeMoneyFlowSum = 0;
     private pevTypicalPrice = 0;
@@ -70,5 +71,14 @@ export class MFI {
         const moneyFlowRatio = positiveMoneyFlowSum / negativeMoneyFlowSum;
 
         return 100 - 100 / (1 + moneyFlowRatio);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

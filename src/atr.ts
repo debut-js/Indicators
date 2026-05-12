@@ -7,7 +7,8 @@ import { EWMA } from './ewma';
 import { getTrueRange } from './providers/true-range';
 import { RMA } from './rma';
 
-export class ATR {
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
+export class ATR  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number;
     private avg: EMA | SMMA | WEMA | LWMA | SMA | EWMA | RMA;
 
@@ -63,5 +64,14 @@ export class ATR {
         }
 
         return this.avg.momentValue(trueRange);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

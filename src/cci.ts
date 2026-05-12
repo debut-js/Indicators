@@ -1,12 +1,13 @@
 import { SMA } from './sma';
 import { MeanDeviationProvider } from './providers/mean-deviation';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * The CCI, or Commodity Channel Index, was developed by Donald Lambert,
  * a technical analyst who originally published the indicator in Commodities magazine (now Futures)
  * in 1980.1 Despite its name, the CCI can be used in any market and is not just for commodities
  */
-export class CCI {
+export class CCI  implements StatefulIndicator<GenericIndicatorState> {
     private md: MeanDeviationProvider;
     private sma: SMA;
 
@@ -29,5 +30,14 @@ export class CCI {
         const meanDeviation = this.md.momentValue(typicalPrice, average);
 
         return meanDeviation && (typicalPrice - average) / (0.015 * meanDeviation);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

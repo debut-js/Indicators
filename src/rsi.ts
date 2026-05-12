@@ -1,4 +1,10 @@
-import { AvgChangeProvider } from './providers/gain';
+import { AvgChangeProvider, AvgChangeProviderState } from './providers/gain';
+import { StatefulIndicator } from './stateful-indicator';
+
+export interface RSIState {
+    period: number;
+    change: AvgChangeProviderState;
+}
 
 /**
  * The relative strength index (RSI) is a momentum indicator used in technical analysis
@@ -13,7 +19,7 @@ import { AvgChangeProvider } from './providers/gain';
  * for a trend reversal or corrective pullback in price.
  * An RSI reading of 30 or below indicates an oversold or undervalued condition.
  */
-export class RSI {
+export class RSI implements StatefulIndicator<RSIState> {
     private change: AvgChangeProvider;
 
     constructor(private period = 14) {
@@ -42,5 +48,22 @@ export class RSI {
         const RS = upAvg / -downAvg;
 
         return 100 - 100 / (1 + RS);
+    }
+
+    dumpState(): RSIState {
+        return {
+            period: this.period,
+            change: this.change.dumpState(),
+        };
+    }
+
+    restoreState(state: RSIState): this {
+        if (state.period !== this.period) {
+            throw new Error(`RSI period mismatch: expected ${this.period}, got ${state.period}`);
+        }
+
+        this.change.restoreState(state.change);
+
+        return this;
     }
 }

@@ -1,6 +1,7 @@
 import { ROC } from './roc';
 import { SMA } from './sma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Know Sure Thing (KST)
  *
@@ -10,7 +11,7 @@ import { SMA } from './sma';
  *
  * Defaults follow LWC: rocLen={10,15,20,30}, smaLen={10,10,10,15}, signal=9.
  */
-export class KST {
+export class KST  implements StatefulIndicator<GenericIndicatorState> {
     private roc1: ROC;
     private roc2: ROC;
     private roc3: ROC;
@@ -84,5 +85,14 @@ export class KST {
         const kst = s1 + 2 * s2 + 3 * s3 + 4 * s4;
         const signal = this.signalSma.momentValue(kst);
         return { kst, signal };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

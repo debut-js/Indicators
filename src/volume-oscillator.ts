@@ -1,11 +1,12 @@
 import { SMA } from './sma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Volume Oscillator
  *
  * Volume Oscillator = SMA(short) - SMA(long)
  */
-export class VolumeOscillator {
+export class VolumeOscillator  implements StatefulIndicator<GenericIndicatorState> {
     private smaShort: SMA;
     private smaLong: SMA;
     private fill = 0;
@@ -46,4 +47,27 @@ export class VolumeOscillator {
         const long = this.smaLong.momentValue(volume);
         return short - long;
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.longPeriod) return;
+
+        this.nextValue = (volume: number) => {
+            const short = this.smaShort.nextValue(volume);
+            const long = this.smaLong.nextValue(volume);
+            return short - long;
+        };
+    }
+}

@@ -1,6 +1,7 @@
 import { getMax, getMin } from './utils';
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Ichimoku Cloud (Ichimoku Kinko Hyo)
  *
@@ -11,7 +12,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * - Senkou Span B: (max(high, 52) + min(low, 52)) / 2, shifted forward by 26
  * - Chikou Span: close, shifted backward by 26
  */
-export class Ichimoku {
+export class Ichimoku  implements StatefulIndicator<GenericIndicatorState> {
     private highs9: CircularBuffer;
     private lows9: CircularBuffer;
     private highs26: CircularBuffer;
@@ -140,5 +141,14 @@ export class Ichimoku {
             senkouB,
             chikou
         };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 } 

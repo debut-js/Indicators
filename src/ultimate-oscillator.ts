@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Ultimate Oscillator
  *
@@ -10,7 +11,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * BP = Close - min(Low, PrevClose)
  * TR = max(High, PrevClose) - min(Low, PrevClose)
  */
-export class UltimateOscillator {
+export class UltimateOscillator  implements StatefulIndicator<GenericIndicatorState> {
     private bp7: CircularBuffer;
     private tr7: CircularBuffer;
     private bp14: CircularBuffer;
@@ -89,4 +90,34 @@ export class UltimateOscillator {
         const avg28 = bp28.reduce((a, b) => a + b, 0) / tr28.reduce((a, b) => a + b, 0);
         return 100 * (4 * avg7 + 2 * avg14 + avg28) / 7;
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.period3) return;
+
+        this.nextValue = (high: number, low: number, close: number) => {
+            const bp = close - Math.min(low, this.prevClose);
+            const tr = Math.max(high, this.prevClose) - Math.min(low, this.prevClose);
+            this.bp7.push(bp); this.tr7.push(tr);
+            this.bp14.push(bp); this.tr14.push(tr);
+            this.bp28.push(bp); this.tr28.push(tr);
+            this.prevClose = close;
+            const avg7 = this.bp7.toArray().reduce((a, b) => a + b, 0) / this.tr7.toArray().reduce((a, b) => a + b, 0);
+            const avg14 = this.bp14.toArray().reduce((a, b) => a + b, 0) / this.tr14.toArray().reduce((a, b) => a + b, 0);
+            const avg28 = this.bp28.toArray().reduce((a, b) => a + b, 0) / this.tr28.toArray().reduce((a, b) => a + b, 0);
+            return 100 * (4 * avg7 + 2 * avg14 + avg28) / 7;
+        };
+    }
+}

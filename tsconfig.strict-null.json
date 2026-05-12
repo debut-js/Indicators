@@ -4,18 +4,18 @@
       "lib": ["ESNext", "DOM"],
       "skipLibCheck": true,
       "module": "commonjs",
+      "moduleResolution": "node",
       "allowJs": true,
-      "outDir": "./lib",
-      "rootDir": "./src",
       "resolveJsonModule": true,
       "esModuleInterop": true,
-      "sourceMap": true,
       "isolatedModules": true,
       "allowSyntheticDefaultImports": true,
-      "declaration": true,
+      "noEmit": true,
+      "strictNullChecks": true,
+      "noImplicitAny": false,
+      "strictPropertyInitialization": false
     },
-    "include": [
-      "src/**/*.ts"
-    ],
-    "exclude": ["node_modules"],
+    "files": [
+      "src/chaikin.ts"
+    ]
 }

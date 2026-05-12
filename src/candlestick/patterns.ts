@@ -1,4 +1,10 @@
 import { OhlcBuffer, OhlcView, approxEqual, gainLossSum } from './helpers';
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from '../stateful-indicator';
+
+export interface CandlestickPatternState {
+    instance: GenericIndicatorState;
+    shared: GenericIndicatorState;
+}
 
 // =====================================================================
 // Module-level singleton OHLC ring shared by every multi-bar pattern.
@@ -28,6 +34,21 @@ function commitBar(o: number, h: number, l: number, c: number): void {
         sharedBuf.nextValue(o, h, l, c);
         lastO = o; lastH = h; lastL = l; lastC = c;
     }
+}
+
+function dumpSharedState(): GenericIndicatorState {
+    return dumpObjectState({ sharedBuf, lastO, lastH, lastL, lastC });
+}
+
+function restoreSharedState(state: GenericIndicatorState): void {
+    const holder = { sharedBuf, lastO, lastH, lastL, lastC };
+
+    restoreObjectState(holder, state);
+    sharedBuf = holder.sharedBuf;
+    lastO = holder.lastO;
+    lastH = holder.lastH;
+    lastL = holder.lastL;
+    lastC = holder.lastC;
 }
 
 /**
@@ -66,12 +87,18 @@ function commitBar(o: number, h: number, l: number, c: number): void {
 // Single-bar Doji family.
 // =====================================================================
 
-abstract class StatelessSingleBar {
+abstract class StatelessSingleBar implements StatefulIndicator<GenericIndicatorState> {
     nextValue(o: number, h: number, l: number, c: number): boolean {
         return this.predicate(o, h, l, c);
     }
     momentValue(o: number, h: number, l: number, c: number): boolean {
         return this.predicate(o, h, l, c);
+    }
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
     protected abstract predicate(o: number, h: number, l: number, c: number): boolean;
 }
@@ -271,7 +298,7 @@ export class BullishSpinningTop extends StatelessSingleBar {
 // `OhlcBuffer`. The base only consolidates plumbing.
 // =====================================================================
 
-abstract class BasePattern {
+abstract class BasePattern implements StatefulIndicator<CandlestickPatternState> {
     constructor(protected readonly required: number) {}
 
     nextValue(o: number, h: number, l: number, c: number): boolean | undefined {
@@ -292,6 +319,20 @@ abstract class BasePattern {
     }
 
     protected abstract predicate(buf: OhlcView): boolean;
+
+    dumpState(): CandlestickPatternState {
+        return {
+            instance: dumpObjectState(this),
+            shared: dumpSharedState(),
+        };
+    }
+
+    restoreState(state: CandlestickPatternState): this {
+        restoreObjectState(this, state.instance);
+        restoreSharedState(state.shared);
+
+        return this;
+    }
 
     /**
      * Reset the module-level singleton buffer. Use when switching

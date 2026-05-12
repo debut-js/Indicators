@@ -2,6 +2,7 @@ import { SMA } from './sma';
 import { EMA } from './ema';
 import { StandardDeviation } from './providers/standard-deviation';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Relative Volatility Index (RVOL)
  *
@@ -19,7 +20,7 @@ import { StandardDeviation } from './providers/standard-deviation';
  * begins from bar 1; combined with stdev's `length-1` warmup, RVOL
  * emits from bar `length + 12` onwards.
  */
-export class RelativeVolatilityIndex {
+export class RelativeVolatilityIndex  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private sma: SMA;
     private stdev: StandardDeviation;
@@ -74,5 +75,14 @@ export class RelativeVolatilityIndex {
         if (upper === undefined || lower === undefined) return;
         const denom = upper + lower;
         return denom === 0 ? 0 : (upper / denom) * 100;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

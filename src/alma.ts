@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Arnaud Legoux Moving Average (ALMA)
  *
@@ -11,8 +12,8 @@ import { CircularBuffer } from './providers/circular-buffer';
  * Weights are precomputed once and reused per bar, so the streaming cost
  * is O(period) per `nextValue`.
  */
-export class ALMA {
-    private buffer: CircularBuffer;
+export class ALMA  implements StatefulIndicator<GenericIndicatorState> {
+    private buffer: CircularBuffer<number>;
     private weights: number[];
 
     constructor(private period = 9, offset = 0.85, sigma = 6, floor = false) {
@@ -33,7 +34,7 @@ export class ALMA {
         this.weights = weights;
     }
 
-    nextValue(value: number) {
+    nextValue(value: number): number | undefined {
         this.buffer.push(value);
 
         if (!this.buffer.filled) {
@@ -44,13 +45,16 @@ export class ALMA {
         // CircularBuffer.forEach iterates from oldest (idx=0) to newest;
         // ALMA expects weight[0] applied to the oldest value, matching the
         // oakscriptjs reference implementation.
-        this.buffer.forEach((v, idx) => {
-            result += v * this.weights[idx];
+        this.buffer.forEach((v: number | undefined, idx: number): void => {
+            const weight = this.weights[idx];
+            if (v === undefined || weight === undefined) return;
+
+            result += v * weight;
         });
         return result;
     }
 
-    momentValue(value: number) {
+    momentValue(value: number): number | undefined {
         // Model the hypothetical post-push window without mutating state.
         if (!this.buffer.filled) {
             if (this.buffer.loaded !== this.period - 1) {
@@ -61,9 +65,16 @@ export class ALMA {
             // [0..period-2], and `value` takes weights[period-1].
             let result = 0;
             for (let i = 0; i < this.period - 1; i++) {
-                result += (this.buffer.at(i) as number) * this.weights[i];
+                const bufferedValue = this.buffer.at(i);
+                const weight = this.weights[i];
+                if (bufferedValue === undefined || weight === undefined) return;
+
+                result += bufferedValue * weight;
             }
-            result += value * this.weights[this.period - 1];
+            const lastWeight = this.weights[this.period - 1];
+            if (lastWeight === undefined) return;
+
+            result += value * lastWeight;
             return result;
         }
 
@@ -71,9 +82,25 @@ export class ALMA {
         // entries shift one weight slot down and `value` lands last.
         let result = 0;
         for (let i = 0; i < this.period - 1; i++) {
-            result += (this.buffer.at(i + 1) as number) * this.weights[i];
+            const bufferedValue = this.buffer.at(i + 1);
+            const weight = this.weights[i];
+            if (bufferedValue === undefined || weight === undefined) return;
+
+            result += bufferedValue * weight;
         }
-        result += value * this.weights[this.period - 1];
+        const lastWeight = this.weights[this.period - 1];
+        if (lastWeight === undefined) return;
+
+        result += value * lastWeight;
         return result;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

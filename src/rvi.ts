@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Relative Vigor Index (RVI)
  *
@@ -13,7 +14,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * (3 bars of SWMA warmup plus `length - 1` to fill the rolling sums),
  * matching the oakscriptjs reference exactly.
  */
-export class RVI {
+export class RVI  implements StatefulIndicator<GenericIndicatorState> {
     private coSwmaBuf = new CircularBuffer(4);
     private hlSwmaBuf = new CircularBuffer(4);
     private coWindow: CircularBuffer;
@@ -91,5 +92,14 @@ export class RVI {
         const v1 = buf.at(1 + startOffset) as number;
         const v2 = buf.at(2 + startOffset) as number;
         return (v0 + 2 * v1 + 2 * v2 + appended) / 6;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

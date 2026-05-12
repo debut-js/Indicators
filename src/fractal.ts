@@ -1,12 +1,13 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Fractal Indicator (Bill Williams Fractals)
  *
  * A fractal up is a high that is higher than two bars to the left and right.
  * A fractal down is a low that is lower than two bars to the left and right.
  */
-export class Fractal {
+export class Fractal  implements StatefulIndicator<GenericIndicatorState> {
     private highs: CircularBuffer;
     private lows: CircularBuffer;
     private fill = 0;
@@ -61,5 +62,14 @@ export class Fractal {
             up: isFractalUp ? arrHighs[center] : undefined,
             down: isFractalDown ? arrLows[center] : undefined
         };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 } 

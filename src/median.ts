@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Rolling Median (50th-percentile, nearest-rank)
  *
@@ -10,7 +11,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * out-of-scope for this minimal port — they can be reconstructed by
  * pairing this with the existing `ATR` and `EMA` classes.
  */
-export class Median {
+export class Median  implements StatefulIndicator<GenericIndicatorState> {
     private buffer: CircularBuffer;
     private medianIdx: number;
 
@@ -53,5 +54,14 @@ export class Median {
         sorted[real] = append;
         sorted.sort((a, b) => a - b);
         return sorted[this.medianIdx];
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

@@ -1,5 +1,6 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Klinger Oscillator (KVO)
  *
@@ -9,7 +10,7 @@ import { EMA } from './ema';
  *
  * Defaults: fast=34, slow=55, signal=13.
  */
-export class Klinger {
+export class Klinger  implements StatefulIndicator<GenericIndicatorState> {
     private prevHlc3: number | undefined;
     private fastEma: EMA;
     private slowEma: EMA;
@@ -55,5 +56,14 @@ export class Klinger {
         const kvo = fast - slow;
         const signal = this.signalEma.momentValue(kvo);
         return { kvo, signal };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

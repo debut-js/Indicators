@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Heikin-Ashi Candlesticks are an offshoot from Japanese candlesticks.
  * Heikin-Ashi Candlesticks use the open-close data from the prior period
@@ -10,7 +11,7 @@
  * Instead, these candlesticks can be used to identify trending periods,
  * potential reversal points and classic technical analysis patterns.
  */
-export class HeikenAshi {
+export class HeikenAshi  implements StatefulIndicator<GenericIndicatorState> {
     private prevOpen = 0;
     private prevClose = 0;
 
@@ -49,5 +50,14 @@ export class HeikenAshi {
         l = Math.min(l, o, c);
 
         return { o, h, l, c };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

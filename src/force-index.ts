@@ -1,9 +1,10 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Force Index
  *
  * Force Index = (Current Close - Previous Close) * Volume
  */
-export class ForceIndex {
+export class ForceIndex  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number;
     private fill = 0;
 
@@ -42,4 +43,27 @@ export class ForceIndex {
         if (this.prevClose === undefined) return;
         return (close - this.prevClose) * volume;
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill <= 0) return;
+
+        this.nextValue = (close: number, volume: number) => {
+            const force = (close - this.prevClose) * volume;
+            this.prevClose = close;
+            return force;
+        };
+    }
+}

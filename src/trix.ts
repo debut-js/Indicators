@@ -1,12 +1,13 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * TRIX (Triple Exponential Average Oscillator)
  *
  * TRIX = (TEMA - previous TEMA) / previous TEMA * 100
  * where TEMA is the triple EMA of price
  */
-export class TRIX {
+export class TRIX  implements StatefulIndicator<GenericIndicatorState> {
     private ema1: EMA;
     private ema2: EMA;
     private ema3: EMA;
@@ -63,4 +64,30 @@ export class TRIX {
         if (this.prevTema === undefined) return;
         return ((ema3 - this.prevTema) / this.prevTema) * 100;
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill <= this.period * 2 || this.prevTema === undefined) return;
+
+        this.nextValue = (value: number) => {
+            const ema1 = this.ema1.nextValue(value);
+            const ema2 = this.ema2.nextValue(ema1);
+            const ema3 = this.ema3.nextValue(ema2);
+            const trix = ((ema3 - this.prevTema) / this.prevTema) * 100;
+            this.prevTema = ema3;
+            return trix;
+        };
+    }
+}

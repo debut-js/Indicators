@@ -1,6 +1,13 @@
-import { SMMA } from '../smma';
+import { SMMA, SMMAState } from '../smma';
+import { dumpOptionalNumber, OptionalNumberState, restoreOptionalNumber, StatefulIndicator } from '../stateful-indicator';
 
-export class AvgChangeProvider {
+export interface AvgChangeProviderState {
+    avgGain: SMMAState;
+    avgLoss: SMMAState;
+    prev: OptionalNumberState;
+}
+
+export class AvgChangeProvider implements StatefulIndicator<AvgChangeProviderState> {
     private avgGain: SMMA;
     private avgLoss: SMMA;
     private prev: number;
@@ -13,7 +20,7 @@ export class AvgChangeProvider {
     nextValue(value: number) {
         const change = value - this.prev;
 
-        if (!this.prev) {
+        if (this.prev === undefined) {
             this.prev = value;
             return;
         }
@@ -40,5 +47,21 @@ export class AvgChangeProvider {
         const downAvg = this.avgLoss.momentValue(localLoss);
 
         return { upAvg, downAvg };
+    }
+
+    dumpState(): AvgChangeProviderState {
+        return {
+            avgGain: this.avgGain.dumpState(),
+            avgLoss: this.avgLoss.dumpState(),
+            prev: dumpOptionalNumber(this.prev),
+        };
+    }
+
+    restoreState(state: AvgChangeProviderState): this {
+        this.avgGain.restoreState(state.avgGain);
+        this.avgLoss.restoreState(state.avgLoss);
+        this.prev = restoreOptionalNumber(state.prev);
+
+        return this;
     }
 }

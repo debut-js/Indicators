@@ -1,5 +1,6 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Bull-Bear Power (Elder)
  *
@@ -9,7 +10,7 @@ import { EMA } from './ema';
  *
  * Returns `undefined` until the EMA has warmed up.
  */
-export class BullBearPower {
+export class BullBearPower  implements StatefulIndicator<GenericIndicatorState> {
     private ema: EMA;
 
     constructor(period = 13) {
@@ -26,5 +27,14 @@ export class BullBearPower {
         const e = this.ema.momentValue(close);
         if (e === undefined) return;
         return high + low - 2 * e;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

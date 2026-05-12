@@ -1,10 +1,18 @@
-import { CircularBuffer } from './providers/circular-buffer';
+import { CircularBuffer, CircularBufferState } from './providers/circular-buffer';
+import { StatefulIndicator } from './stateful-indicator';
+
+export interface WMAState {
+    period: number;
+    denominator: number;
+    buffer: CircularBufferState<number>;
+}
+
 /**
  * Weighted moving average (WMA) assign a heavier weighting to more current data points since they are more relevant than data points
  * in the distant past. The sum of the weighting should add up to 1 (or 100%).
  * In the case of the simple moving average, the weightings are equally distributed, which is why they are not shown in the table above.
  */
-export class WMA {
+export class WMA implements StatefulIndicator<WMAState> {
     private denominator: number;
     private buffer: CircularBuffer;
     private values: number[];
@@ -64,5 +72,24 @@ export class WMA {
         }
         result += (value * this.period) / this.denominator;
         return result;
+    }
+
+    dumpState(): WMAState {
+        return {
+            period: this.period,
+            denominator: this.denominator,
+            buffer: this.buffer.dumpState(),
+        };
+    }
+
+    restoreState(state: WMAState): this {
+        if (state.period !== this.period) {
+            throw new Error(`WMA period mismatch: expected ${this.period}, got ${state.period}`);
+        }
+
+        this.denominator = state.denominator;
+        this.buffer.restoreState(state.buffer);
+
+        return this;
     }
 }

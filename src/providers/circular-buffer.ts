@@ -1,13 +1,25 @@
+import { StatefulIndicator } from '../stateful-indicator';
+
+export type CircularBufferSlotState<T> = { hasValue: false } | { hasValue: true; value: T };
+export type RestorableCircularBufferSlotState<T> = CircularBufferSlotState<T> | null;
+
+export interface CircularBufferState<T = number> {
+    length: number;
+    filled: boolean;
+    pointer: number;
+    buffer: RestorableCircularBufferSlotState<T>[];
+}
+
 /**
  * Circular buffers (also known as ring buffers) are fixed-size buffers that work as if the memory is contiguous & circular in nature.
  * As memory is generated and consumed, data does not need to be reshuffled – rather, the head/tail pointers are adjusted.
  * When data is added, the head pointer advances. When data is consumed, the tail pointer advances.
  * If you reach the end of the buffer, the pointers simply wrap around to the beginning.
  */
-export class CircularBuffer<T = number> {
+export class CircularBuffer<T = number> implements StatefulIndicator<CircularBufferState<T>> {
     public filled = false;
     protected pointer = 0;
-    protected buffer: Array<T>;
+    protected buffer: Array<T | undefined>;
     protected maxIndex: number;
 
     /**
@@ -22,32 +34,32 @@ export class CircularBuffer<T = number> {
     /**
      * Push item to buffer, when buffer length is overflow, push will rewrite oldest item
      */
-    public push(item: T) {
+    public push(item: T): T {
         const overwrited = this.buffer[this.pointer];
 
         this.buffer[this.pointer] = item;
         this.iteratorNext();
 
-        return overwrited;
+        return overwrited as T;
     }
 
     /**
      * Replace last added item in buffer (reversal push). May be used for revert push removed item.
      * @deprecated use peek instead
      */
-    public pushback(item: T) {
+    public pushback(item: T): T {
         this.iteratorPrev();
         const overwrited = this.buffer[this.pointer];
         this.buffer[this.pointer] = item;
 
-        return overwrited;
+        return overwrited as T;
     }
 
     /**
      * Get item for replacing, does not modify anything
      */
-    public peek() {
-        return this.buffer[this.pointer];
+    public peek(): T {
+        return this.buffer[this.pointer] as T;
     }
 
     /**
@@ -78,12 +90,12 @@ export class CircularBuffer<T = number> {
     /**
      * Array like forEach loop
      */
-    public forEach(callback: (value: T, index?: number) => void) {
+    public forEach(callback: (value: T, index: number) => void): void {
         let idx = this.pointer;
         let virtualIdx = 0;
 
         while (virtualIdx !== this.length) {
-            callback(this.buffer[idx], virtualIdx);
+            callback(this.buffer[idx] as T, virtualIdx);
             idx = (this.length + idx + 1) % this.length;
             virtualIdx++;
         }
@@ -92,12 +104,12 @@ export class CircularBuffer<T = number> {
     /**
      * Array like forEach loop, but from last to first (reversal forEach)
      */
-    forEachRight(callback: (value: T, index?: number) => void) {
+    forEachRight(callback: (value: T, index: number) => void): void {
         let idx = (this.length + this.pointer - 1) % this.length;
         let virtualIdx = this.length - 1;
 
         while (virtualIdx !== this.length) {
-            callback(this.buffer[idx], virtualIdx);
+            callback(this.buffer[idx] as T, virtualIdx);
             idx = (this.length + idx - 1) % this.length;
             virtualIdx--;
         }
@@ -113,7 +125,7 @@ export class CircularBuffer<T = number> {
     /**
      * Fill buffer
      */
-    public fill(item: T) {
+    public fill(item: T): void {
         this.buffer.fill(item);
         this.filled = true;
     }
@@ -121,14 +133,45 @@ export class CircularBuffer<T = number> {
     /**
      * Get array from buffer
      */
-    public toArray() {
-        return this.buffer;
+    public toArray(): T[] {
+        return this.buffer as T[];
+    }
+
+    public dumpState(): CircularBufferState<T> {
+        const buffer: CircularBufferSlotState<T>[] = [];
+
+        for (let i = 0; i < this.buffer.length; i++) {
+            const value = this.buffer[i];
+            buffer.push(value === undefined ? { hasValue: false } : { hasValue: true, value });
+        }
+
+        return {
+            length: this.length,
+            filled: this.filled,
+            pointer: this.pointer,
+            buffer,
+        };
+    }
+
+    public restoreState(state: CircularBufferState<T>): this {
+        if (state.length !== this.length) {
+            throw new Error(`CircularBuffer length mismatch: expected ${this.length}, got ${state.length}`);
+        }
+
+        this.filled = state.filled;
+        this.pointer = state.pointer;
+        this.maxIndex = this.length - 1;
+        this.buffer = state.buffer.map((slot: RestorableCircularBufferSlotState<T>): T | undefined =>
+            slot && slot.hasValue ? slot.value : undefined,
+        );
+
+        return this;
     }
 
     /**
      * Move iterator to next position
      */
-    private iteratorNext() {
+    private iteratorNext(): void {
         this.pointer++;
 
         if (this.pointer > this.maxIndex) {
@@ -140,7 +183,7 @@ export class CircularBuffer<T = number> {
     /**
      * Move iterator to prev position
      */
-    private iteratorPrev() {
+    private iteratorPrev(): void {
         this.pointer--;
 
         if (this.pointer < 0) {

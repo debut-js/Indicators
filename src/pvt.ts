@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Price Volume Trend (PVT)
  *
@@ -6,7 +7,7 @@
  * Bars where `prevClose === 0` contribute 0 to mirror the oakscriptjs
  * reference implementation's guard.
  */
-export class PVT {
+export class PVT  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private value = 0;
 
@@ -28,5 +29,14 @@ export class PVT {
         if (this.prevClose === 0) return this.value;
         const change = close - this.prevClose;
         return this.value + (change / this.prevClose) * volume;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

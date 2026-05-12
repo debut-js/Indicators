@@ -1,12 +1,13 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Adaptive Moving Average (AMA) is a powerful tool that can significantly improve your trading strategy. 
  * In this ultimate guide, I’ll walk you through everything you need to know about AMA – from its 
  * basics to implementing it in your own trading approach. 
  * Get ready to take your trading game to the next level!
  */
-export class AMA {
+export class AMA  implements StatefulIndicator<GenericIndicatorState> {
     private circular: CircularBuffer;
     private sumNoise = 0;
     private prevPrice: number;
@@ -55,5 +56,14 @@ export class AMA {
     momentValue(): number {
         // Return the last calculated AMA value
         return this.prevAMA;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

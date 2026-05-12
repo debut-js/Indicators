@@ -1,4 +1,11 @@
-import { CircularBuffer } from './providers/circular-buffer';
+import { CircularBuffer, CircularBufferState } from './providers/circular-buffer';
+import { StatefulIndicator } from './stateful-indicator';
+
+export interface SMAState {
+    period: number;
+    sum: number;
+    circular: CircularBufferState<number>;
+}
 // console.log(sma([1, 2, 3, 4, 5, 6, 7, 8, 9], 4));
 //=> [ '2.50', '3.50', '4.50', '5.50', '6.50', '7.50' ]
 //=>   │       │       │       │       │       └─(6+7+8+9)/4
@@ -8,7 +15,7 @@ import { CircularBuffer } from './providers/circular-buffer';
 //=>   │       └─(2+3+4+5)/4
 //=>   └─(1+2+3+4)/4
 
-export class SMA {
+export class SMA implements StatefulIndicator<SMAState> {
     private circular: CircularBuffer;
     private sum = 0;
 
@@ -43,5 +50,36 @@ export class SMA {
         }
 
         return (this.sum - this.circular.peek() + value) / this.period;
+    }
+
+    dumpState(): SMAState {
+        return {
+            period: this.period,
+            sum: this.sum,
+            circular: this.circular.dumpState(),
+        };
+    }
+
+    restoreState(state: SMAState): this {
+        if (state.period !== this.period) {
+            throw new Error(`SMA period mismatch: expected ${this.period}, got ${state.period}`);
+        }
+
+        this.sum = state.sum;
+        this.circular.restoreState(state.circular);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (!this.circular.filled) return;
+
+        this.nextValue = (value: number) => {
+            this.sum = this.sum - this.circular.push(value) + value;
+
+            return this.sum / this.period;
+        };
     }
 }

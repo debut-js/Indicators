@@ -1,6 +1,7 @@
 import { ROC } from './roc';
 import { WMA } from './wma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Coppock Curve
  *
@@ -11,7 +12,7 @@ import { WMA } from './wma';
  *
  * Defaults follow LWC: wmaLength=10, longRoc=14, shortRoc=11.
  */
-export class CoppockCurve {
+export class CoppockCurve  implements StatefulIndicator<GenericIndicatorState> {
     private rocLong: ROC;
     private rocShort: ROC;
     private wma: WMA;
@@ -34,5 +35,14 @@ export class CoppockCurve {
         const short = this.rocShort.momentValue(value);
         if (long === undefined || short === undefined) return;
         return this.wma.momentValue(long + short);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

@@ -1,5 +1,6 @@
 import { SMA } from './sma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Moving Average Envelopes
  *
@@ -8,7 +9,7 @@ import { SMA } from './sma';
  * - Upper Envelope: SMA + (SMA * percent / 100)
  * - Lower Envelope: SMA - (SMA * percent / 100)
  */
-export class Envelopes {
+export class Envelopes  implements StatefulIndicator<GenericIndicatorState> {
     private sma: SMA;
     private fill = 0;
 
@@ -55,4 +56,29 @@ export class Envelopes {
         const lower = middle - deviation;
         return { lower, middle, upper };
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.period) return;
+
+        this.nextValue = (close: number) => {
+            const middle = this.sma.nextValue(close);
+            const deviation = middle * this.percent / 100;
+            const upper = middle + deviation;
+            const lower = middle - deviation;
+            return { lower, middle, upper };
+        };
+    }
+}

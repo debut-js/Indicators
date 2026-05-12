@@ -1,6 +1,7 @@
 import { SMA } from './sma';
 import { StandardDeviation } from './providers/standard-deviation';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Historical Volatility (HV)
  *
@@ -12,7 +13,7 @@ import { StandardDeviation } from './providers/standard-deviation';
  * percentage. The first bar contributes no log return; HV emits once
  * `length` valid log returns have been collected.
  */
-export class HistoricalVolatility {
+export class HistoricalVolatility  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private sma: SMA;
     private stdev: StandardDeviation;
@@ -45,5 +46,14 @@ export class HistoricalVolatility {
         if (mean === undefined) return;
         const sd = this.stdev.momentValue(r, mean);
         return sd * this.multiplier;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

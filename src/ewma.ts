@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * The Exponentially Weighted Moving Average (EWMA) is a quantitative or statistical measure used to model or describe
  * a time series. The EWMA is widely used in finance, the main applications being technical analysis and volatility modeling.
@@ -8,7 +9,7 @@
  * The higher the value of alpha, the more closely the EWMA tracks the original time series.
  * @param alpha must be from 0 to 1
  */
-export class EWMA {
+export class EWMA  implements StatefulIndicator<GenericIndicatorState> {
     private prevValue: number;
     private filled = false;
 
@@ -28,5 +29,14 @@ export class EWMA {
         if (this.filled) {
             return this.alpha * value + (1 - this.alpha) * (this.prevValue || 1);
         }
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

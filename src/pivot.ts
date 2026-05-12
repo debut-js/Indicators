@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Pivot points are major support and resistance levels where there likely to be a retracement
  * of price used by traders to objectively determine potential entry and exit levels of underlying assets.
@@ -26,7 +27,7 @@ interface PivotValue {
     s5?: number;
     s6?: number;
 }
-export class Pivot {
+export class Pivot  implements StatefulIndicator<GenericIndicatorState> {
     private calculator: (h: number, l: number, c: number) => PivotValue;
 
     constructor(private mode: PivotMode = 'classic') {
@@ -139,5 +140,34 @@ export class Pivot {
         const s3 = pp - delta;
 
         return { r3, r2, r1, pp, s1, s2, s3 };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindCalculator();
+
+        return this;
+    }
+
+    private bindCalculator(): void {
+        switch (this.mode) {
+            case 'classic':
+                this.calculator = this.classic;
+                break;
+            case 'camarilla':
+                this.calculator = this.camarilla;
+                break;
+            case 'woodie':
+                this.calculator = this.woodie;
+                break;
+            case 'fibonacci':
+                this.calculator = this.fibonacci;
+                break;
+        }
     }
 }

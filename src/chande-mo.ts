@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Chande Momentum Oscillator (CMO)
  *
@@ -15,7 +16,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * indicator emits from bar `length` onwards (one extra bar of warmup
  * to seed the change series, matching the oakscriptjs reference).
  */
-export class ChandeMO {
+export class ChandeMO  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private posBuf: CircularBuffer;
     private negBuf: CircularBuffer;
@@ -76,5 +77,14 @@ export class ChandeMO {
         const total = sumPos + sumNeg;
         if (total === 0) return 0;
         return (100 * (sumPos - sumNeg)) / total;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

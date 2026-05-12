@@ -1,12 +1,13 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Volume Weighted Moving Average (VWMA)
  *
  * A moving average where each price is weighted by the bar's volume.
  * Formula: VWMA = sum(price * volume) / sum(volume) over the last `period` bars.
  */
-export class VWMA {
+export class VWMA  implements StatefulIndicator<GenericIndicatorState> {
     private prices: CircularBuffer;
     private volumes: CircularBuffer;
     private numerator = 0;
@@ -56,5 +57,32 @@ export class VWMA {
         const num = this.numerator - removedPrice * removedVolume + price * volume;
         const den = this.denominator - removedVolume + volume;
         return den === 0 ? 0 : num / den;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (!this.prices.filled) return;
+
+        this.nextValue = (price: number, volume: number) => {
+            const removedPrice = this.prices.push(price);
+            const removedVolume = this.volumes.push(volume);
+
+            this.numerator += price * volume - removedPrice * removedVolume;
+            this.denominator += volume - removedVolume;
+
+            return this.denominator === 0 ? 0 : this.numerator / this.denominator;
+        };
     }
 }

@@ -1,5 +1,6 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Developed by Marc Chaikin, the Chaikin Oscillator measures the momentum of the Accumulation Distribution Line
  * using the MACD formula. (This makes it an indicator of an indicator.) The Chaikin Oscillator
@@ -11,7 +12,7 @@ import { EMA } from './ema';
  * trend changes in the underlying security. The Chaikin Oscillator generates signals with
  * crosses above/below the zero line or with bullish/bearish divergences.
  */
-export class ChaikinOscillator {
+export class ChaikinOscillator  implements StatefulIndicator<GenericIndicatorState> {
     private accDistribution = 0;
     private emaFast: EMA;
     private emaSlow: EMA;
@@ -21,16 +22,33 @@ export class ChaikinOscillator {
         this.emaSlow = new EMA(slowPeriod);
     }
 
-    nextValue(h: number, l: number, c: number, v: number) {
+    nextValue(h: number, l: number, c: number, v: number): number | undefined {
         this.accDistribution += (c === h && c === l) || h === l ? 0 : ((2 * c - l - h) / (h - l)) * v;
 
-        return this.emaFast.nextValue(this.accDistribution) - this.emaSlow.nextValue(this.accDistribution);
+        const fast = this.emaFast.nextValue(this.accDistribution);
+        const slow = this.emaSlow.nextValue(this.accDistribution);
+        if (fast === undefined || slow === undefined) return;
+
+        return fast - slow;
     }
 
-    momentValue(h: number, l: number, c: number, v: number) {
+    momentValue(h: number, l: number, c: number, v: number): number | undefined {
         const accDistribution =
             this.accDistribution + ((c === h && c === l) || h === l ? 0 : ((2 * c - l - h) / (h - l)) * v);
 
-        return this.emaFast.momentValue(accDistribution) - this.emaSlow.momentValue(accDistribution);
+        const fast = this.emaFast.momentValue(accDistribution);
+        const slow = this.emaSlow.momentValue(accDistribution);
+        if (fast === undefined || slow === undefined) return;
+
+        return fast - slow;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

@@ -1,5 +1,6 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * SMI Ergodic Indicator
  *
@@ -10,7 +11,7 @@ import { EMA } from './ema';
  * Identical to TSI in formula except SMI Ergodic returns the raw ratio
  * (no 100x scaling). Defaults follow LWC: long=20, short=5, signal=5.
  */
-export class SMIErgodic {
+export class SMIErgodic  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private pcLong: EMA;
     private pcShort: EMA;
@@ -62,5 +63,14 @@ export class SMIErgodic {
         const smi = absS === 0 ? 0 : pcS / absS;
         const signal = this.signalEma.momentValue(smi);
         return { smi, signal };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

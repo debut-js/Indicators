@@ -1,5 +1,6 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * True Strength Index (TSI)
  *
@@ -11,7 +12,7 @@ import { EMA } from './ema';
  *
  * Defaults follow the LWC convention: longLen=25, shortLen=13, signalLen=13.
  */
-export class TSI {
+export class TSI  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private pcLong: EMA;
     private pcShort: EMA;
@@ -81,5 +82,14 @@ export class TSI {
         const signal = this.signalEma.momentValue(tsi);
 
         return { tsi, signal };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

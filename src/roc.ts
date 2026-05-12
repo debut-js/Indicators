@@ -1,4 +1,5 @@
 import { CircularBuffer } from './providers/circular-buffer';
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * The Rate-of-Change (ROC) indicator, which is also referred to as simply Momentum,
  * is a pure momentum oscillator that measures the percent change in price from one period to the next.
@@ -10,7 +11,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * these crossovers can be used to identify the overall trend.
  * Identifying overbought or oversold extremes comes naturally to the Rate-of-Change oscillator.
  **/
-export class ROC {
+export class ROC  implements StatefulIndicator<GenericIndicatorState> {
     private values: CircularBuffer;
 
     constructor(period = 5) {
@@ -31,5 +32,14 @@ export class ROC {
         if (outed) {
             return ((value - outed) / outed) * 100;
         }
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

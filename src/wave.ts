@@ -1,5 +1,6 @@
 import { percentChange } from './utils';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 export type WaveData = {
     consolidate: number;
     power: number;
@@ -20,7 +21,7 @@ function clenWave(wave: WaveData) {
     return wave;
 }
 
-export class Wave {
+export class Wave  implements StatefulIndicator<GenericIndicatorState> {
     private up: WaveData;
     private down: WaveData;
 
@@ -93,5 +94,14 @@ export class Wave {
         } else {
             return { ...this.down };
         }
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

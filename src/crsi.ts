@@ -2,6 +2,7 @@ import { PercentRank } from './providers/percent-rank';
 import { ROC } from './roc';
 import { RSI } from './rsi';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Connors RSI (CRSI) uses the above formula to generate a value between 0 and 100.
  * This is primarily used to identify overbought and oversold levels.
@@ -12,7 +13,7 @@ import { RSI } from './rsi';
  * When the market is in a downtrend, Connors RSI might generate short term buy signals.
  * Original core here: https://tradingview.com/script/vWAPUAl9-Stochastic-Connors-RSI/
  */
-export class cRSI {
+export class cRSI  implements StatefulIndicator<GenericIndicatorState> {
     private rsi: RSI;
     private updownRsi: RSI;
     private prevClose: number;
@@ -80,5 +81,14 @@ export class cRSI {
         }
 
         return updownPeriod;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Chande Momentum Oscillator (CMO)
  *
@@ -8,7 +9,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * - Gains: sum of positive changes over period
  * - Losses: sum of absolute value of negative changes over period
  */
-export class CMO {
+export class CMO  implements StatefulIndicator<GenericIndicatorState> {
     private buffer: CircularBuffer;
     private fill = 0;
 
@@ -76,4 +77,36 @@ export class CMO {
         if (denom === 0) return 0;
         return 100 * (gains - losses) / denom;
     }
-} 
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        if (this.fill < this.period + 1) return;
+
+        this.nextValue = (value: number) => {
+            this.buffer.push(value);
+            const arr = this.buffer.toArray().slice(-this.period - 1);
+            let gains = 0;
+            let losses = 0;
+            for (let i = 1; i < arr.length; i++) {
+                const diff = arr[i] - arr[i - 1];
+                if (diff > 0) gains += diff;
+                else losses -= diff;
+            }
+            const denom = gains + losses;
+            if (denom === 0) return 0;
+            return 100 * (gains - losses) / denom;
+        };
+    }
+}

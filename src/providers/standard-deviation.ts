@@ -1,5 +1,12 @@
-import { CircularBuffer } from './circular-buffer';
-export class StandardDeviation {
+import { CircularBuffer, CircularBufferState } from './circular-buffer';
+import { StatefulIndicator } from '../stateful-indicator';
+
+export interface StandardDeviationState {
+    period: number;
+    values: CircularBufferState<number>;
+}
+
+export class StandardDeviation implements StatefulIndicator<StandardDeviationState> {
     private values: CircularBuffer;
 
     constructor(private period: number) {
@@ -26,5 +33,22 @@ export class StandardDeviation {
         }
 
         return Math.sqrt(sumSq / this.period);
+    }
+
+    dumpState(): StandardDeviationState {
+        return {
+            period: this.period,
+            values: this.values.dumpState(),
+        };
+    }
+
+    restoreState(state: StandardDeviationState): this {
+        if (state.period !== this.period) {
+            throw new Error(`StandardDeviation period mismatch: expected ${this.period}, got ${state.period}`);
+        }
+
+        this.values.restoreState(state.values);
+
+        return this;
     }
 }

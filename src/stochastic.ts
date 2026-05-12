@@ -2,6 +2,7 @@ import { SMA } from './sma';
 import { MaxProvider } from './providers/max-value';
 import { MinProvider } from './providers/min-value';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * A stochastic oscillator is a momentum indicator comparing a particular closing price
  * of a security to a range of its prices over a certain period of time.
@@ -10,7 +11,7 @@ import { MinProvider } from './providers/min-value';
  * It is used to generate overbought and oversold trading signals,
  * utilizing a 0-100 bounded range of values.
  */
-export class Stochastic {
+export class Stochastic  implements StatefulIndicator<GenericIndicatorState> {
     private max: MaxProvider;
     private min: MinProvider;
     private sma: SMA;
@@ -55,5 +56,14 @@ export class Stochastic {
         const d: number = this.sma.momentValue(k);
 
         return { k, d };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

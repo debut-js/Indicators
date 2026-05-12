@@ -1,6 +1,7 @@
 import { EMA } from './ema';
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Mass Index
  *
@@ -12,7 +13,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * summation `length` is configurable. Returns `undefined` until the
  * inner double-EMA has produced `length` consecutive ratios.
  */
-export class MassIndex {
+export class MassIndex  implements StatefulIndicator<GenericIndicatorState> {
     private inner: EMA;
     private outer: EMA;
     private window: CircularBuffer;
@@ -70,5 +71,14 @@ export class MassIndex {
             sum += this.window.at(i) as number;
         }
         return sum + ratio;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

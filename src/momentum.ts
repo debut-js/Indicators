@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Momentum
  *
@@ -7,7 +8,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  *
  * Returns `undefined` until `length` past values have been observed.
  */
-export class Momentum {
+export class Momentum  implements StatefulIndicator<GenericIndicatorState> {
     private buffer: CircularBuffer;
 
     constructor(private period = 10) {
@@ -38,5 +39,14 @@ export class Momentum {
         // Buffer is full: hypothetical push evicts at(0), so the new
         // oldest (= `period bars ago`) is the current at(1).
         return value - (this.buffer.at(1) as number);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

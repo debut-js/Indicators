@@ -1,6 +1,7 @@
 import { RMA } from './rma';
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Chande Kroll Stop
  *
@@ -12,7 +13,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  *
  * Defaults follow LWC: atrLength=10, atrCoeff=1, stopLength=9.
  */
-export class ChandeKrollStop {
+export class ChandeKrollStop  implements StatefulIndicator<GenericIndicatorState> {
     private atrRma: RMA;
     private prevClose: number | undefined;
     private highBuf: CircularBuffer;
@@ -124,5 +125,14 @@ export class ChandeKrollStop {
         }
 
         return { stopLong, stopShort };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

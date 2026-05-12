@@ -1,3 +1,4 @@
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * McGinley Dynamic
  *
@@ -9,7 +10,7 @@
  * oakscriptjs reference implementation, including its safety net
  * against `MD === 0`.
  */
-export class McGinleyDynamic {
+export class McGinleyDynamic  implements StatefulIndicator<GenericIndicatorState> {
     private md: number | undefined;
 
     constructor(private period = 14) {}
@@ -30,5 +31,14 @@ export class McGinleyDynamic {
         const ratio = value / this.md;
         const k = this.period * Math.pow(ratio, 4);
         return this.md + (value - this.md) / k;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

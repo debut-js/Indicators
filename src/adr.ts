@@ -1,5 +1,6 @@
 import { SMA } from './sma';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Average Daily Range (ADR)
  *
@@ -9,7 +10,7 @@ import { SMA } from './sma';
  * periods. Useful for sizing stops or as an ATR alternative when you
  * want strictly arithmetic averaging.
  */
-export class ADR {
+export class ADR  implements StatefulIndicator<GenericIndicatorState> {
     private sma: SMA;
 
     constructor(period = 14) {
@@ -22,5 +23,14 @@ export class ADR {
 
     momentValue(high: number, low: number) {
         return this.sma.momentValue(high - low);
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

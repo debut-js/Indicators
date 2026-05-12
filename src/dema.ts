@@ -1,12 +1,13 @@
 import { EMA } from './ema';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Double Exponential Moving Average (DEMA)
  *
  * Reduces lag by combining a single EMA with a double-smoothed EMA.
  * Formula: DEMA = 2 * EMA(price, n) - EMA(EMA(price, n), n)
  */
-export class DEMA {
+export class DEMA  implements StatefulIndicator<GenericIndicatorState> {
     private ema1: EMA;
     private ema2: EMA;
 
@@ -45,5 +46,14 @@ export class DEMA {
         }
 
         return 2 * e1 - e2;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

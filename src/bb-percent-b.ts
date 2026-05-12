@@ -1,5 +1,6 @@
 import { BollingerBands } from './bands';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Bollinger Bands %B
  *
@@ -9,7 +10,7 @@ import { BollingerBands } from './bands';
  * Returns `undefined` while the underlying BB is warming up, or when the
  * upper and lower bands are equal (degenerate window).
  */
-export class BBPercentB {
+export class BBPercentB  implements StatefulIndicator<GenericIndicatorState> {
     private bb: BollingerBands;
 
     constructor(period = 20, stdDev = 2) {
@@ -32,5 +33,14 @@ export class BBPercentB {
         const range = bb.upper - bb.lower;
         if (range === 0) return;
         return (price - bb.lower) / range;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Choppiness Index
  *
@@ -12,7 +13,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * Note: oakscriptjs computes ATR(1) which equals TR exactly (RMA with
  * α=1/1 collapses to the latest input), so this port uses TR directly.
  */
-export class Choppiness {
+export class Choppiness  implements StatefulIndicator<GenericIndicatorState> {
     private prevClose: number | undefined;
     private trBuf: CircularBuffer;
     private highBuf: CircularBuffer;
@@ -100,5 +101,14 @@ export class Choppiness {
         const range = highHi - lowLo;
         if (range === 0) return;
         return (100 * Math.log10(sumTR / range)) / this.logLength;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

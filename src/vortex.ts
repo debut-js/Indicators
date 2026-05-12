@@ -1,5 +1,6 @@
 import { CircularBuffer } from './providers/circular-buffer';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  * Vortex Indicator (VI+ / VI-)
  *
@@ -13,7 +14,7 @@ import { CircularBuffer } from './providers/circular-buffer';
  * indicator is ready after `length + 1` bars (one to seed prev OHLC,
  * `length` to fill the rolling sums).
  */
-export class Vortex {
+export class Vortex  implements StatefulIndicator<GenericIndicatorState> {
     private prevHigh: number | undefined;
     private prevLow: number | undefined;
     private prevClose: number | undefined;
@@ -101,5 +102,14 @@ export class Vortex {
         const sumT = this.sumTR - oldTR + tr;
         if (sumT === 0) return;
         return { plus: sumP / sumT, minus: sumM / sumT };
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        return restoreObjectState(this, state);
     }
 }

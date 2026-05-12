@@ -1,12 +1,13 @@
 import { SMA } from './sma';
 import { AO } from './ao';
 
+import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjectState } from './stateful-indicator';
 /**
  The Accelerator Oscillator (AC indicator) is a technical analysis tool that helps
  to gauge the momentum in the market. It also helps to predict when the momentum will change.
  */
 
-export class AC {
+export class AC  implements StatefulIndicator<GenericIndicatorState> {
     private sma: SMA;
     private ao: AO;
     private smaValue: number;
@@ -48,5 +49,34 @@ export class AC {
 
     momentValue(high: number, low: number) {
         return;
+    }
+
+
+    dumpState(): GenericIndicatorState {
+        return dumpObjectState(this);
+    }
+
+    restoreState(state: GenericIndicatorState): this {
+        restoreObjectState(this, state);
+        this.bindFilledNextValue();
+
+        return this;
+    }
+
+    private bindFilledNextValue(): void {
+        delete (this as any).nextValue;
+        delete (this as any).momentValue;
+        if (this.aoValue === undefined || this.smaValue === undefined) return;
+
+        this.nextValue = (high: number, low: number) => {
+            this.aoValue = this.ao.nextValue(high, low);
+            this.smaValue = this.sma.nextValue(this.aoValue);
+
+            return this.aoValue - this.smaValue;
+        };
+
+        this.momentValue = (high: number, low: number) => {
+            return this.ao.momentValue(high, low) - this.sma.momentValue(this.aoValue);
+        };
     }
 }
