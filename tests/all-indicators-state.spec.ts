@@ -5,6 +5,7 @@ type ArgsMapper = (bar: Bar) => IndicatorArgs;
 
 type AnyIndicator = {
     nextValue: (...args: IndicatorArgs) => unknown;
+    momentValue?: (...args: IndicatorArgs) => unknown;
     dumpState: () => unknown;
     restoreState: (state: unknown) => AnyIndicator;
 };
@@ -183,6 +184,15 @@ describe('All public indicators state restore', () => {
         warmup.forEach((bar: Bar): void => {
             runtime.nextValue(...args(bar));
         });
+
+        if (typeof restored.momentValue === 'function' && typeof runtime.momentValue === 'function') {
+            const runtimeMoment = runtime.momentValue(...args(continuation[0]));
+            const restoredMoment = restored.momentValue(...args(continuation[0]));
+
+            expect(runtimeMoment).not.toBeUndefined();
+            expect(restoredMoment).not.toBeUndefined();
+            expect(normalize(restoredMoment)).toEqual(normalize(runtimeMoment));
+        }
 
         continuation.forEach((bar: Bar): void => {
             expect(normalize(restored.nextValue(...args(bar)))).toEqual(normalize(runtime.nextValue(...args(bar))));

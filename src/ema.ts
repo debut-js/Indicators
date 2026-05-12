@@ -34,12 +34,7 @@ export class EMA implements StatefulIndicator<EMAState> {
 
         if (sma !== undefined) {
             this.ema = sma;
-            this.nextValue = (value: number): number => {
-                return (this.ema = (value - this.ema!) * this.smooth + this.ema!);
-            };
-            this.momentValue = (value: number): number => {
-                return (value - this.ema!) * this.smooth + this.ema!;
-            };
+            this.bindEmaNextValue();
         }
 
         return sma;
