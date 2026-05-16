@@ -54,8 +54,8 @@ export class RelativeVolatilityIndex  implements StatefulIndicator<GenericIndica
         const upperInput = chg <= 0 ? 0 : sd;
         const lowerInput = chg > 0 ? 0 : sd;
 
-        const upper = isNaN(upperInput) ? undefined : this.upperEma.nextValue(upperInput);
-        const lower = isNaN(lowerInput) ? undefined : this.lowerEma.nextValue(lowerInput);
+        const upper = upperInput === undefined || isNaN(upperInput) ? undefined : this.upperEma.nextValue(upperInput);
+        const lower = lowerInput === undefined || isNaN(lowerInput) ? undefined : this.lowerEma.nextValue(lowerInput);
         if (upper === undefined || lower === undefined) return;
 
         const denom = upper + lower;
@@ -70,8 +70,8 @@ export class RelativeVolatilityIndex  implements StatefulIndicator<GenericIndica
         const chg = close - this.prevClose;
         const upperInput = chg <= 0 ? 0 : sd;
         const lowerInput = chg > 0 ? 0 : sd;
-        const upper = isNaN(upperInput) ? undefined : this.upperEma.momentValue(upperInput);
-        const lower = isNaN(lowerInput) ? undefined : this.lowerEma.momentValue(lowerInput);
+        const upper = upperInput === undefined || isNaN(upperInput) ? undefined : this.upperEma.momentValue(upperInput);
+        const lower = lowerInput === undefined || isNaN(lowerInput) ? undefined : this.lowerEma.momentValue(lowerInput);
         if (upper === undefined || lower === undefined) return;
         const denom = upper + lower;
         return denom === 0 ? 0 : (upper / denom) * 100;

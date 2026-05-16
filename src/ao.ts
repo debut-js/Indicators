@@ -11,15 +11,15 @@ import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjec
 export class AO  implements StatefulIndicator<GenericIndicatorState> {
     private smaSlow: SMA;
     private smaFast: SMA;
-    private smaSlowValue: number;
-    private smaFastValue: number;
+    private smaSlowValue: number | undefined;
+    private smaFastValue: number | undefined;
 
     constructor(fastPeriod = 5, slowPeriod = 34) {
         this.smaSlow = new SMA(slowPeriod);
         this.smaFast = new SMA(fastPeriod);
     }
 
-    nextValue(high: number, low: number) {
+    nextValue(high: number, low: number): number | undefined {
         this.smaSlowValue = this.smaSlow.nextValue((high + low) / 2);
         this.smaFastValue = this.smaFast.nextValue((high + low) / 2);
 
@@ -27,21 +27,21 @@ export class AO  implements StatefulIndicator<GenericIndicatorState> {
             return;
         }
 
-        this.nextValue = (high: number, low: number) => {
-            this.smaSlowValue = this.smaSlow.nextValue((high + low) / 2);
-            this.smaFastValue = this.smaFast.nextValue((high + low) / 2);
+        this.nextValue = (high: number, low: number): number => {
+            this.smaSlowValue = this.smaSlow.nextValue((high + low) / 2)!;
+            this.smaFastValue = this.smaFast.nextValue((high + low) / 2)!;
 
             return this.smaFastValue - this.smaSlowValue;
         };
 
-        this.momentValue = (high: number, low: number) => {
-            return this.smaFast.momentValue((high + low) / 2) - this.smaSlow.momentValue((high + low) / 2);
+        this.momentValue = (high: number, low: number): number => {
+            return this.smaFast.momentValue((high + low) / 2)! - this.smaSlow.momentValue((high + low) / 2)!;
         };
 
         return this.smaFastValue - this.smaSlowValue;
     }
 
-    momentValue(high: number, low: number): number {
+    momentValue(high: number, low: number): number | undefined {
         return;
     }
 
@@ -62,15 +62,15 @@ export class AO  implements StatefulIndicator<GenericIndicatorState> {
         delete (this as any).momentValue;
         if (this.smaSlowValue === undefined || this.smaFastValue === undefined) return;
 
-        this.nextValue = (high: number, low: number) => {
-            this.smaSlowValue = this.smaSlow.nextValue((high + low) / 2);
-            this.smaFastValue = this.smaFast.nextValue((high + low) / 2);
+        this.nextValue = (high: number, low: number): number => {
+            this.smaSlowValue = this.smaSlow.nextValue((high + low) / 2)!;
+            this.smaFastValue = this.smaFast.nextValue((high + low) / 2)!;
 
             return this.smaFastValue - this.smaSlowValue;
         };
 
-        this.momentValue = (high: number, low: number) => {
-            return this.smaFast.momentValue((high + low) / 2) - this.smaSlow.momentValue((high + low) / 2);
+        this.momentValue = (high: number, low: number): number => {
+            return this.smaFast.momentValue((high + low) / 2)! - this.smaSlow.momentValue((high + low) / 2)!;
         };
     }
 }

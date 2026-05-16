@@ -35,15 +35,15 @@ describe('Simple Moving Average', () => {
             const sma6Calc = sma6.nextValue(tick);
 
             if (interval2[idx]) {
-                expect(Math.abs(sma2Calc - interval2[idx])).toBeLessThan(EPSILON);
+                expect(Math.abs(sma2Calc! - interval2[idx]!)).toBeLessThan(EPSILON);
             }
 
             if (interval4[idx]) {
-                expect(Math.abs(sma4Calc - interval4[idx])).toBeLessThan(EPSILON);
+                expect(Math.abs(sma4Calc! - interval4[idx]!)).toBeLessThan(EPSILON);
             }
 
             if (interval6[idx]) {
-                expect(Math.abs(sma6Calc - interval6[idx])).toBeLessThan(EPSILON);
+                expect(Math.abs(sma6Calc! - interval6[idx]!)).toBeLessThan(EPSILON);
             }
         });
     });

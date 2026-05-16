@@ -29,7 +29,7 @@ export class StochasticRSI  implements StatefulIndicator<GenericIndicatorState> 
      * Get next value for closed candle
      * affect all next calculations
      */
-    nextValue(close: number): { k: number; d: number; stochRsi: number } {
+    nextValue(close: number): { k: number; d: number; stochRsi: number } | undefined {
         const rsi = this.rsi.nextValue(close);
 
         if (rsi === undefined) {
@@ -51,6 +51,9 @@ export class StochasticRSI  implements StatefulIndicator<GenericIndicatorState> 
         }
 
         const d = this.sma2.nextValue(k);
+        if (d === undefined) {
+            return;
+        }
 
         return { k, d, stochRsi };
     }
@@ -59,18 +62,27 @@ export class StochasticRSI  implements StatefulIndicator<GenericIndicatorState> 
      * Get next value for non closed (tick) candle hlc
      * does not affect any next calculations
      */
-    momentValue(close: number): { k: number; d: number; stochRsi: number } {
+    momentValue(close: number): { k: number; d: number; stochRsi: number } | undefined {
         if (!this.max.filled()) {
             return;
         }
 
         const rsi = this.rsi.momentValue(close);
+        if (rsi === undefined) {
+            return;
+        }
         const max = this.max.momentValue(rsi);
         const min = this.min.momentValue(rsi);
 
         const stochRsi = ((rsi - min) / (max - min)) * 100;
         const k = this.sma1.momentValue(stochRsi);
+        if (k === undefined) {
+            return;
+        }
         const d = this.sma2.momentValue(k);
+        if (d === undefined) {
+            return;
+        }
 
         return { k, d, stochRsi };
     }

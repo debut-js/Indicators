@@ -14,7 +14,7 @@ export interface WEMAState {
  */
 export class WEMA implements StatefulIndicator<WEMAState> {
     private smooth: number;
-    private wema: number;
+    private wema: number | undefined;
     private sma: SMA;
 
     constructor(private period: number) {
@@ -26,7 +26,7 @@ export class WEMA implements StatefulIndicator<WEMAState> {
      * Get next value for closed candle hlc
      * affect all next calculations
      */
-    nextValue(value: number) {
+    nextValue(value: number): number | undefined {
         if (this.wema === undefined) {
             return (this.wema = this.sma.nextValue(value));
         }
@@ -38,7 +38,7 @@ export class WEMA implements StatefulIndicator<WEMAState> {
      * Get next value for non closed (tick) candle hlc
      * does not affect any next calculations
      */
-    momentValue(value: number) {
+    momentValue(value: number): number | undefined {
         if (this.wema === undefined) {
             return this.sma.momentValue(value);
         }

@@ -20,9 +20,12 @@ export class MACD  implements StatefulIndicator<GenericIndicatorState> {
     nextValue(value: number) {
         const emaFast = this.emaFastIndicator.nextValue(value);
         const emaSlow = this.emaSlowIndicator.nextValue(value);
+        if (emaFast === undefined || emaSlow === undefined) {
+            return;
+        }
         const macd = emaFast - emaSlow;
-        const signal = (macd && this.emaSignalIndicator.nextValue(macd)) || undefined;
-        const histogram = macd - signal || undefined;
+        const signal = this.emaSignalIndicator.nextValue(macd);
+        const histogram = signal === undefined ? undefined : macd - signal;
 
         if (isNaN(macd)) {
             return;
@@ -40,9 +43,12 @@ export class MACD  implements StatefulIndicator<GenericIndicatorState> {
     momentValue(value: number) {
         const emaFast = this.emaFastIndicator.momentValue(value);
         const emaSlow = this.emaSlowIndicator.momentValue(value);
+        if (emaFast === undefined || emaSlow === undefined) {
+            return;
+        }
         const macd = emaFast - emaSlow;
-        const signal = macd && this.emaSignalIndicator.momentValue(macd);
-        const histogram = macd - signal;
+        const signal = this.emaSignalIndicator.momentValue(macd);
+        const histogram = signal === undefined ? undefined : macd - signal;
 
         return {
             macd,

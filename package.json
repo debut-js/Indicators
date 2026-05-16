@@ -41,7 +41,7 @@
         "url": "git@github.com:debut-js/Indicators.git"
     },
     "scripts": {
-        "typecheck": "tsc --noEmit -p ./tsconfig.typecheck.json && tsc --noEmit -p ./tsconfig.strict-null.json",
+        "typecheck": "tsc --noEmit -p ./tsconfig.typecheck.json",
         "build": "npm run typecheck && rollup -c ./rollup.config.js",
         "start": "ts-node --",
         "watch": "rollup -cw ./rollup.config.js",

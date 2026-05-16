@@ -8,8 +8,8 @@ export class Correlation  implements StatefulIndicator<GenericIndicatorState> {
     private filled: boolean;
     private SMAx: SMA;
     private SMAy: SMA;
-    private SMAxValue: number;
-    private SMAyValue: number;
+    private SMAxValue: number | undefined;
+    private SMAyValue: number | undefined;
 
     constructor(public period: number) {
         this.SMAx = new SMA(this.period);
@@ -24,6 +24,10 @@ export class Correlation  implements StatefulIndicator<GenericIndicatorState> {
 
         this.SMAxValue = this.SMAx.nextValue(priceX);
         this.SMAyValue = this.SMAy.nextValue(priceY);
+
+        if (this.SMAxValue === undefined || this.SMAyValue === undefined) {
+            return;
+        }
 
         let SSxy = 0;
         let SSxx = 0;

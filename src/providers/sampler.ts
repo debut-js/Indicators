@@ -1,6 +1,6 @@
 export interface IndicatorInstance {
-    nextValue: (value: number) => number;
-    momentValue: (value: number) => number;
+    nextValue: (value: number) => number | undefined;
+    momentValue: (value: number) => number | undefined;
 }
 
 export interface IndicatorConstructor {
@@ -29,13 +29,15 @@ export class Sampler<T extends IndicatorConstructor> {
     /**
      * Calculate next values to get all samples of current idicator
      */
-    nextValue(value: number): number {
+    nextValue(value: number): number | undefined {
         for (let i = 0; i < this.samples; i++) {
-            value = this._indicators[i].nextValue(value);
+            const next = this._indicators[i].nextValue(value);
 
-            if (value === undefined) {
-                return value;
+            if (next === undefined) {
+                return;
             }
+
+            value = next;
         }
 
         return value;
@@ -44,13 +46,15 @@ export class Sampler<T extends IndicatorConstructor> {
     /**
      * Get immediate value
      */
-    momentValue(value: number): number {
+    momentValue(value: number): number | undefined {
         for (let i = 0; i < this.samples; i++) {
-            value = this._indicators[i].momentValue(value);
+            const next = this._indicators[i].momentValue(value);
 
-            if (value === undefined || value === null) {
-                return value;
+            if (next === undefined || next === null) {
+                return;
             }
+
+            value = next;
         }
 
         return value;

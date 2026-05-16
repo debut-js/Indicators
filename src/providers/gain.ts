@@ -10,7 +10,7 @@ export interface AvgChangeProviderState {
 export class AvgChangeProvider implements StatefulIndicator<AvgChangeProviderState> {
     private avgGain: SMMA;
     private avgLoss: SMMA;
-    private prev: number;
+    private prev: number | undefined;
 
     constructor(period: number) {
         this.avgGain = new SMMA(period);
@@ -18,13 +18,12 @@ export class AvgChangeProvider implements StatefulIndicator<AvgChangeProviderSta
     }
 
     nextValue(value: number) {
-        const change = value - this.prev;
-
         if (this.prev === undefined) {
             this.prev = value;
             return;
         }
 
+        const change = value - this.prev;
         const isPositive = change > 0;
         const isNegative = change < 0;
         const localGain = isPositive ? change : 0;
@@ -38,6 +37,10 @@ export class AvgChangeProvider implements StatefulIndicator<AvgChangeProviderSta
     }
 
     momentValue(value: number) {
+        if (this.prev === undefined) {
+            return;
+        }
+
         const change = value - this.prev;
         const isPositive = change > 0;
         const isNegative = change < 0;

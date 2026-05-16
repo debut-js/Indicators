@@ -29,19 +29,20 @@ export class TEMA  implements StatefulIndicator<GenericIndicatorState> {
      * Adds a new value and returns the TEMA
      * @param value Input value (e.g., close price)
      */
-    nextValue(value: number) {
+    nextValue(value: number): number | undefined {
         const ema1 = this.ema1.nextValue(value);
         if (ema1 === undefined) return;
         const ema2 = this.ema2.nextValue(ema1);
         if (ema2 === undefined) return;
         const ema3 = this.ema3.nextValue(ema2);
+        if (ema3 === undefined) return;
         this.fill++;
         if (this.fill < this.period * 2) return;
         const tema = 3 * ema1 - 3 * ema2 + ema3;
-        this.nextValue = (value: number) => {
-            const ema1 = this.ema1.nextValue(value);
-            const ema2 = this.ema2.nextValue(ema1);
-            const ema3 = this.ema3.nextValue(ema2);
+        this.nextValue = (value: number): number => {
+            const ema1 = this.ema1.nextValue(value)!;
+            const ema2 = this.ema2.nextValue(ema1)!;
+            const ema3 = this.ema3.nextValue(ema2)!;
             return 3 * ema1 - 3 * ema2 + ema3;
         };
         return tema;
@@ -51,10 +52,13 @@ export class TEMA  implements StatefulIndicator<GenericIndicatorState> {
      * Calculates TEMA for the current (not closed) bar without changing the internal state
      * @param value Input value (e.g., close price)
      */
-    momentValue(value: number) {
+    momentValue(value: number): number | undefined {
         const ema1 = this.ema1.momentValue(value);
+        if (ema1 === undefined) return;
         const ema2 = this.ema2.momentValue(ema1);
+        if (ema2 === undefined) return;
         const ema3 = this.ema3.momentValue(ema2);
+        if (ema3 === undefined) return;
         return 3 * ema1 - 3 * ema2 + ema3;
     }
 
@@ -74,10 +78,10 @@ export class TEMA  implements StatefulIndicator<GenericIndicatorState> {
         delete (this as any).nextValue;
         if (this.fill < this.period * 2) return;
 
-        this.nextValue = (value: number) => {
-            const ema1 = this.ema1.nextValue(value);
-            const ema2 = this.ema2.nextValue(ema1);
-            const ema3 = this.ema3.nextValue(ema2);
+        this.nextValue = (value: number): number => {
+            const ema1 = this.ema1.nextValue(value)!;
+            const ema2 = this.ema2.nextValue(ema1)!;
+            const ema3 = this.ema3.nextValue(ema2)!;
             return 3 * ema1 - 3 * ema2 + ema3;
         };
     }

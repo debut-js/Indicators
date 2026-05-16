@@ -24,15 +24,16 @@ export class VolumeOscillator  implements StatefulIndicator<GenericIndicatorStat
      * Adds a new value and returns the Volume Oscillator
      * @param volume Volume of the current bar
      */
-    nextValue(volume: number) {
+    nextValue(volume: number): number | undefined {
         const short = this.smaShort.nextValue(volume);
         const long = this.smaLong.nextValue(volume);
         this.fill++;
         if (this.fill < this.longPeriod) return;
+        if (short === undefined || long === undefined) return;
         const vo = short - long;
-        this.nextValue = (volume: number) => {
-            const short = this.smaShort.nextValue(volume);
-            const long = this.smaLong.nextValue(volume);
+        this.nextValue = (volume: number): number => {
+            const short = this.smaShort.nextValue(volume)!;
+            const long = this.smaLong.nextValue(volume)!;
             return short - long;
         };
         return vo;
@@ -42,9 +43,10 @@ export class VolumeOscillator  implements StatefulIndicator<GenericIndicatorStat
      * Calculates Volume Oscillator for the current (not closed) bar without changing the internal state
      * @param volume Volume of the current bar
      */
-    momentValue(volume: number) {
+    momentValue(volume: number): number | undefined {
         const short = this.smaShort.momentValue(volume);
         const long = this.smaLong.momentValue(volume);
+        if (short === undefined || long === undefined) return;
         return short - long;
     }
 
@@ -64,9 +66,9 @@ export class VolumeOscillator  implements StatefulIndicator<GenericIndicatorStat
         delete (this as any).nextValue;
         if (this.fill < this.longPeriod) return;
 
-        this.nextValue = (volume: number) => {
-            const short = this.smaShort.nextValue(volume);
-            const long = this.smaLong.nextValue(volume);
+        this.nextValue = (volume: number): number => {
+            const short = this.smaShort.nextValue(volume)!;
+            const long = this.smaLong.nextValue(volume)!;
             return short - long;
         };
     }

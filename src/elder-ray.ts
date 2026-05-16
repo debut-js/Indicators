@@ -24,14 +24,15 @@ export class ElderRay  implements StatefulIndicator<GenericIndicatorState> {
      * @param low Low price of the current bar
      * @param close Close price of the current bar
      */
-    nextValue(high: number, low: number, close: number) {
+    nextValue(high: number, low: number, close: number): { bull: number; bear: number } | undefined {
         const ema = this.ema.nextValue(close);
         this.fill++;
         if (this.fill < this.period) return;
+        if (ema === undefined) return;
         const bull = high - ema;
         const bear = low - ema;
-        this.nextValue = (high: number, low: number, close: number) => {
-            const e = this.ema.nextValue(close);
+        this.nextValue = (high: number, low: number, close: number): { bull: number; bear: number } => {
+            const e = this.ema.nextValue(close)!;
             return { bull: high - e, bear: low - e };
         };
         return { bull, bear };
@@ -43,8 +44,9 @@ export class ElderRay  implements StatefulIndicator<GenericIndicatorState> {
      * @param low Low price of the current bar
      * @param close Close price of the current bar
      */
-    momentValue(high: number, low: number, close: number) {
+    momentValue(high: number, low: number, close: number): { bull: number; bear: number } | undefined {
         const ema = this.ema.momentValue(close);
+        if (ema === undefined) return;
         return { bull: high - ema, bear: low - ema };
     }
 
@@ -64,8 +66,8 @@ export class ElderRay  implements StatefulIndicator<GenericIndicatorState> {
         delete (this as any).nextValue;
         if (this.fill < this.period) return;
 
-        this.nextValue = (high: number, low: number, close: number) => {
-            const ema = this.ema.nextValue(close);
+        this.nextValue = (high: number, low: number, close: number): { bull: number; bear: number } => {
+            const ema = this.ema.nextValue(close)!;
             return { bull: high - ema, bear: low - ema };
         };
     }

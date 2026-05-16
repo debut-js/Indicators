@@ -6,7 +6,7 @@ describe('PSAR', () => {
     it('Cross sdk validate', () => {
         const psar = new PSAR();
 
-        const local = [];
+        const local: number[] = [];
         const cross = PSAR2.calculate({ high: highs, low: lows, step: 0.02, max: 0.2 });
 
         for (let i = 0; i < lows.length; i++) {
@@ -18,7 +18,7 @@ describe('PSAR', () => {
     it('Cross sdk moment value validate', () => {
         const psar = new PSAR();
 
-        const localMoment = [];
+        const localMoment: number[] = [];
         const cross = PSAR2.calculate({ high: highs, low: lows, step: 0.02, max: 0.2 });
 
         for (let i = 0; i < lows.length; i++) {

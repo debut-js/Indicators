@@ -30,7 +30,7 @@ export class Klinger  implements StatefulIndicator<GenericIndicatorState> {
         // `NaN >= 0` (also false) and pushes `-volume`. Mirror that
         // behaviour so the EMA seeds line up exactly.
         const isFirst = this.prevHlc3 === undefined;
-        const change = isFirst ? NaN : hlc3 - this.prevHlc3;
+        const change = isFirst ? NaN : hlc3 - this.prevHlc3!;
         this.prevHlc3 = hlc3;
         const sv = !isFirst && change >= 0 ? volume : -volume;
 
@@ -46,7 +46,7 @@ export class Klinger  implements StatefulIndicator<GenericIndicatorState> {
     momentValue(high: number, low: number, close: number, volume: number) {
         const hlc3 = (high + low + close) / 3;
         const isFirst = this.prevHlc3 === undefined;
-        const change = isFirst ? NaN : hlc3 - this.prevHlc3;
+        const change = isFirst ? NaN : hlc3 - this.prevHlc3!;
         const sv = !isFirst && change >= 0 ? volume : -volume;
 
         const fast = this.fastEma.momentValue(sv);

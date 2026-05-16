@@ -12,7 +12,7 @@ describe('ATR', () => {
             const excel = atrValues[idx];
 
             if (idx > period) {
-                expect(Math.abs(calculated - excel)).toBeLessThan(0.007);
+                expect(Math.abs(calculated! - excel!)).toBeLessThan(0.007);
             }
         });
     });
@@ -22,8 +22,8 @@ describe('ATR', () => {
         const atr = new ATR(period);
         const atr2 = new ATR2({ period, high: [], low: [], close: [] });
 
-        const local = [];
-        const cross = [];
+        const local: Array<number | undefined> = [];
+        const cross: Array<number | undefined> = [];
 
         ohlc.forEach((tick) => {
             local.push(atr.nextValue(tick.h, tick.l, tick.c));

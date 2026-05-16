@@ -3,12 +3,12 @@ import { CircularBuffer, CircularBufferState } from './circular-buffer';
 export interface ExtremumsState extends CircularBufferState<number> {
     period: number;
     mode: 'max' | 'min';
-    prevIx: number;
+    prevIx: number | null | undefined;
 }
 
 export class Extremums extends CircularBuffer {
     private comparator: Function;
-    private prevIx: number;
+    private prevIx: number | null | undefined;
 
     constructor(public period = 100, private mode: 'max' | 'min') {
         super(period);
@@ -53,7 +53,7 @@ export class Extremums extends CircularBuffer {
         return false;
     }
 
-    public getExtremum(shallow?: boolean): number {
+    public getExtremum(shallow?: boolean): number | null {
         let extremumIdx = (this.length + this.pointer - 2) % this.length;
         let extremum: number = this.mode === 'max' ? -Infinity : Infinity;
 
@@ -65,6 +65,11 @@ export class Extremums extends CircularBuffer {
             const before = this.buffer[(this.length + extremumIdx - 1) % this.length];
             const after = this.buffer[(this.length + extremumIdx + 1) % this.length];
             const foundExtremum = this.buffer[extremumIdx];
+
+            if (before === undefined || after === undefined || foundExtremum === undefined) {
+                extremumIdx = (this.length + extremumIdx - 1) % this.length;
+                continue;
+            }
 
             if (
                 this.comparator(foundExtremum, extremum) &&

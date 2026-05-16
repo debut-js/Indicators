@@ -15,9 +15,9 @@ import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjec
  * 75-100	Extremely Strong Trend
  */
 export class ADX  implements StatefulIndicator<GenericIndicatorState> {
-    private prevHigh: number;
-    private prevLow: number;
-    private prevClose: number;
+    private prevHigh: number | undefined;
+    private prevLow: number | undefined;
+    private prevClose: number | undefined;
     private wma1: WWS;
     private wma2: WWS;
     private wma3: WWS;
@@ -31,7 +31,7 @@ export class ADX  implements StatefulIndicator<GenericIndicatorState> {
     }
 
     nextValue(h: number, l: number, c: number) {
-        if (!this.prevClose) {
+        if (this.prevClose === undefined || this.prevHigh === undefined || this.prevLow === undefined) {
             this.prevHigh = h;
             this.prevLow = l;
             this.prevClose = c;
@@ -57,7 +57,11 @@ export class ADX  implements StatefulIndicator<GenericIndicatorState> {
             nDM = 0;
         }
 
-        const atr = this.wma1.nextValue(getTrueRange(h, l, this.prevClose));
+        const trueRange = getTrueRange(h, l, this.prevClose!);
+        if (trueRange === undefined) {
+            return;
+        }
+        const atr = this.wma1.nextValue(trueRange);
         const avgPDI = this.wma2.nextValue(pDM);
         const avgNDI = this.wma3.nextValue(nDM);
 
@@ -65,7 +69,7 @@ export class ADX  implements StatefulIndicator<GenericIndicatorState> {
         this.prevLow = l;
         this.prevClose = c;
 
-        if (avgPDI === undefined || avgNDI === undefined) {
+        if (atr === undefined || avgPDI === undefined || avgNDI === undefined) {
             return;
         }
 
@@ -77,7 +81,7 @@ export class ADX  implements StatefulIndicator<GenericIndicatorState> {
     }
 
     momentValue(h: number, l: number, c: number) {
-        if (!this.prevClose) {
+        if (this.prevClose === undefined || this.prevHigh === undefined || this.prevLow === undefined) {
             return;
         }
 
@@ -99,11 +103,15 @@ export class ADX  implements StatefulIndicator<GenericIndicatorState> {
             nDM = 0;
         }
 
-        const atr = this.wma1.momentValue(getTrueRange(h, l, this.prevClose));
+        const trueRange = getTrueRange(h, l, this.prevClose!);
+        if (trueRange === undefined) {
+            return;
+        }
+        const atr = this.wma1.momentValue(trueRange);
         const avgPDI = this.wma2.momentValue(pDM);
         const avgNDI = this.wma3.momentValue(nDM);
 
-        if (avgPDI === undefined || avgNDI === undefined) {
+        if (atr === undefined || avgPDI === undefined || avgNDI === undefined) {
             return;
         }
 

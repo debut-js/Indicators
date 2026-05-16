@@ -4,6 +4,12 @@ import { LineEvent, LineDirective, Point, Env } from './types';
 import { TrendStateModel } from './trend.model';
 
 export type { LinesModel, TrendStateModel, Env };
+type ExtremumPoint = {
+    x: number;
+    l: number;
+    h: number;
+};
+
 export class Indicator {
     public hLineDirectives: LineDirective[] = [];
     public lLineDirectives: LineDirective[] = [];
@@ -11,23 +17,19 @@ export class Indicator {
     private lines: LinesModel;
     private step: number = 1; // TODO operate in different time scale
     private i: number = 0;
-    public env: Env;
+    public env: Required<Env>;
     // Settings
     // Debug values
     localCounter = 0;
     consoleWindow: boolean;
     minLog;
     maxLog;
-    prevPoint: {
-        x: number;
-        l: number;
-        h: number;
-    } = null;
+    prevPoint: ExtremumPoint | null = null;
     /**
      *
      * @param pars type of Env
      */
-    constructor(pars) {
+    constructor(pars: Partial<Env> = {}) {
         // Assign defaults
         this.env = Object.assign(
             {
@@ -40,6 +42,8 @@ export class Indicator {
                 rollbackLength: 3, // Устойчивый откат после пробоя линии тренда
                 deltaModel: 1,
                 minIsSizeOnRollback: 0.05,
+                forkDurationMin: 0,
+                forkDurationMax: Infinity,
             },
             pars,
         );
@@ -130,7 +134,7 @@ export class Indicator {
         }
 
         //Delete passed lines
-        let toDelete = [];
+        let toDelete: number[] = [];
         this.lines.list.forEach((ofLines) => {
             if (ofLines) {
                 toDelete = [];
@@ -156,7 +160,7 @@ export class Indicator {
                         toDelete.push(lineID);
                     }
                 });
-                toDelete.forEach((lineID) => this.lines.delete(lineID));
+                toDelete.forEach((lineID: number) => this.lines.delete(lineID));
             }
         });
         this.prevPoint = {

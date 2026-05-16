@@ -7,7 +7,7 @@ import { LinesModel } from './lines.model';
  * The trendModel object use Lines and lineDirectives to estimate current trend state
  */
 export class TrendStateModel {
-    env: Env;
+    env: Required<Env>;
     in: {
         // longer state
         state: null | 'unknown' | 'flat' | 'rise' | 'fall' | 'squeeze';
@@ -24,14 +24,14 @@ export class TrendStateModel {
         start: {
             x: number;
             y: number;
-        };
+        } | null;
     };
     was: {
         // previous state
         state: null | 'flat' | 'rise' | 'fall';
-        lineIndex: number;
+        lineIndex: number | null;
         line: LineModel | null;
-        size?: number;
+        size?: number | null;
         success?: boolean;
     };
     width: number; // longer state trend width
@@ -40,7 +40,7 @@ export class TrendStateModel {
     duration: number; // duration of the trend
     kdiff: number[] = [];
     lines: LinesModel;
-    constructor(lines: LinesModel, env: Env) {
+    constructor(lines: LinesModel, env: Required<Env>) {
         this.env = env;
         this.lines = lines;
         this.in = {
@@ -128,18 +128,18 @@ export class TrendStateModel {
 
         if (this.is.state) {
             // Wait for any line good break
-            this.is.size = Math.max(this.is.size, Math.abs(this.is.start.y - this.is.line.candlePoint.y));
+            this.is.size = Math.max(this.is.size ?? 0, Math.abs(this.is.start!.y - this.is.line!.candlePoint.y));
             let selectedLine: LineModel =
-                this.lines.id[this.is.lineIndex] || this.lines.id[this.is.line.type == 'h' ? 0 : 1];
-            let foundBreak = null;
-            let delta = null;
+                this.lines.id[this.is.lineIndex!] || this.lines.id[this.is.line!.type == 'h' ? 0 : 1];
+            let foundBreak: number | null = null;
+            let delta: number | null = null;
             let prevLineID: number;
             let oppositeLines = this.lines.list[selectedLine.type == 'h' ? 1 : 0].filter(
-                (id) => this.lines.id[id].forked && this.lines.id[id].thisPoint.x - this.lines.id[id].forkedAt > 12,
+                (id) => this.lines.id[id].forked && this.lines.id[id].thisPoint.x - (this.lines.id[id].forkedAt ?? 0) > 12,
             );
             let oppositeLineID =
                 oppositeLines.length > 1 ? oppositeLines[1] : oppositeLines.length > 0 ? oppositeLines[0] : null;
-            let oppositeLinesInsideTrend = oppositeLines.filter((id) => this.lines.id[id].forkedAt > this.is.start.x);
+            let oppositeLinesInsideTrend = oppositeLines.filter((id) => (this.lines.id[id].forkedAt ?? 0) > this.is.start!.x);
             if (selectedLine)
                 this.lines.list[selectedLine.type == 'h' ? 0 : 1].forEach((lineID, index) => {
                     let theLine = this.lines.id[lineID];
@@ -154,27 +154,27 @@ export class TrendStateModel {
                                 : this.lines.id[lineID > 0 ? lineID - 1 : 0];
                         if (cond)
                             delta =
-                                this.lines.id[lineID > 1 ? prevLineID : selectedLine.type == 'h' ? 0 : 1].lastForkY -
+                                (this.lines.id[lineID > 1 ? prevLineID! : selectedLine.type == 'h' ? 0 : 1].lastForkY ?? 0) -
                                 theLine.candlePoint.y;
-                        else if (theLine.rollback) delta = theLine.rollback.lastForkValue - theLine.candlePoint.y;
+                        else if (theLine.rollback) delta = (theLine.rollback.lastForkValue ?? 0) - theLine.candlePoint.y;
                         else delta = 0;
                         if (
-                            theLine.rollback.lastForkValue > 0 && // Only if break of forked line
+                            (theLine.rollback.lastForkValue ?? 0) > 0 && // Only if break of forked line
                             // The line lasts more then this.env.minRightLeg
                             theLine.thisPoint.x - theLine.rollback.lastForkTime > this.env.minRightLeg &&
                             // TODO Maybe we should choose shortest and bounced line instead longest
-                            (this.is.state == 'fall' ? this.llMaxDuration.length > 1 : this.hlMaxDuration.length > 1) && // Превышены граничные параметры
+                            (this.is.state == 'fall' ? this.llMaxDuration!.length > 1 : this.hlMaxDuration!.length > 1) && // Превышены граничные параметры
                             // - По предыдущему экстремуму. Пробита величина прошлого экстремума
                             ((selectedLine.type == 'h' ? delta < 0 : delta > 0) ||
                                 // - По времени. текущая лития столкнулась с длительным пробоем
                                 theLine.rollback.length > this.env.rollbackLength ||
                                 //  - По амплитуде. Откат до установленной доли между ценой начала тренда и ценой от начала обратной линии
-                                ((this.is.size * 2) / 3 > Math.abs(this.is.start.y - this.is.line.candlePoint.y) &&
-                                    this.is.size > this.is.line.candlePoint.y * this.env.minIsSizeOnRollback &&
+                                (((this.is.size ?? 0) * 2) / 3 > Math.abs(this.is.start!.y - this.is.line!.candlePoint.y) &&
+                                    (this.is.size ?? 0) > this.is.line!.candlePoint.y * this.env.minIsSizeOnRollback &&
                                     oppositeLinesInsideTrend.length > 1) ||
                                 (selectedLine.type == 'h'
-                                    ? theLine.candlePoint.y > this.is.start.y && this.lines.list[0].length == 1
-                                    : theLine.candlePoint.y < this.is.start.y && this.lines.list[1].length == 1)) && // сохраняются разрешенные диапазоны
+                                    ? theLine.candlePoint.y > this.is.start!.y && this.lines.list[0].length == 1
+                                    : theLine.candlePoint.y < this.is.start!.y && this.lines.list[1].length == 1)) && // сохраняются разрешенные диапазоны
                             // - предыдущее ветвление (экстремум) был в заданном диапазоне
                             ((theLine.candlePoint.x - theLine.rollback.lastForkTime > this.env.forkDurationMin &&
                                 theLine.candlePoint.x - theLine.rollback.lastForkTime < this.env.forkDurationMax) ||
@@ -183,8 +183,8 @@ export class TrendStateModel {
                                     ? theLine.candlePoint.y > theLine.startPoint.y
                                     : theLine.candlePoint.y < theLine.startPoint.y) ||
                                 (selectedLine.type == 'h'
-                                    ? theLine.candlePoint.y > this.is.start.y && this.lines.list[0].length == 1
-                                    : theLine.candlePoint.y < this.is.start.y && this.lines.list[1].length == 1))
+                                    ? theLine.candlePoint.y > this.is.start!.y && this.lines.list[0].length == 1
+                                    : theLine.candlePoint.y < this.is.start!.y && this.lines.list[1].length == 1))
                         )
                             foundBreak = lineID + 1;
                     }
@@ -193,7 +193,7 @@ export class TrendStateModel {
                 // Calculate and compare was and is
                 this.in.size = (this.was.size || 0) + this.is.size;
                 // Estimate in state
-                const dif = this.lines.id[0].candlePoint.y - this.is.start.y;
+                const dif = this.lines.id[0].candlePoint.y - this.is.start!.y;
                 const isSuccess = this.is.state == 'rise' ? dif >= 0 : dif < 0;
                 if (this.was.size) this.in.state = this.was.size > this.is.size ? this.was.state : this.is.state;
                 // Copy is to was
@@ -202,6 +202,9 @@ export class TrendStateModel {
                 // Update is
                 // if exists opposite line with length > ?5 && length < thisLine.length then createOrder
                 this.is.line = this.is.state == 'fall' ? this.llMaxDuration : this.hlMaxDuration;
+                if (this.is.line === null) {
+                    return;
+                }
                 this.is.state = this.is.line.type == 'h' ? 'fall' : 'rise';
                 this.is.lineIndex = this.is.line.index;
                 this.is.start = this.lines.id[0].candlePoint;

@@ -13,7 +13,7 @@ describe('AO', () => {
             if (!excel && !calculated) {
                 expect(excel).toEqual(undefined);
             } else {
-                expect(Math.abs(calculated - excel)).toBeLessThan(0.0001);
+                expect(Math.abs(calculated! - excel!)).toBeLessThan(0.0001);
             }
         });
     });

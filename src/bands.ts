@@ -26,7 +26,7 @@ export class BollingerBands implements StatefulIndicator<BollingerBandsState> {
         this.sd = new StandardDeviation(period);
     }
 
-    nextValue(close: number): BollingerBandsValue {
+    nextValue(close: number): BollingerBandsValue | undefined {
         const middle = this.sma.nextValue(close);
         const sd = this.sd.nextValue(close, middle);
 
@@ -36,12 +36,16 @@ export class BollingerBands implements StatefulIndicator<BollingerBandsState> {
             return;
         }
 
+        if (middle === undefined || sd === undefined) {
+            return;
+        }
+
         const lower = middle - this.stdDev * sd;
         const upper = middle + this.stdDev * sd;
 
         this.nextValue = (close: number): BollingerBandsValue => {
-            const middle = this.sma.nextValue(close);
-            const sd = this.sd.nextValue(close, middle);
+            const middle = this.sma.nextValue(close)!;
+            const sd = this.sd.nextValue(close, middle)!;
             const lower = middle - this.stdDev * sd;
             const upper = middle + this.stdDev * sd;
 
@@ -51,9 +55,12 @@ export class BollingerBands implements StatefulIndicator<BollingerBandsState> {
         return { lower, middle, upper };
     }
 
-    momentValue(close: number): BollingerBandsValue {
+    momentValue(close: number): BollingerBandsValue | undefined {
         const middle = this.sma.momentValue(close);
         const sd = this.sd.momentValue(close, middle);
+        if (middle === undefined || sd === undefined) {
+            return;
+        }
         const lower = middle - this.stdDev * sd;
         const upper = middle + this.stdDev * sd;
 
@@ -92,8 +99,8 @@ export class BollingerBands implements StatefulIndicator<BollingerBandsState> {
         if (this.fill < this.period) return;
 
         this.nextValue = (close: number): BollingerBandsValue => {
-            const middle = this.sma.nextValue(close);
-            const sd = this.sd.nextValue(close, middle);
+            const middle = this.sma.nextValue(close)!;
+            const sd = this.sd.nextValue(close, middle)!;
             const lower = middle - this.stdDev * sd;
             const upper = middle + this.stdDev * sd;
 

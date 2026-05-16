@@ -10,15 +10,15 @@ import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjec
 export class AC  implements StatefulIndicator<GenericIndicatorState> {
     private sma: SMA;
     private ao: AO;
-    private smaValue: number;
-    private aoValue: number;
+    private smaValue: number | undefined;
+    private aoValue: number | undefined;
 
     constructor() {
         this.sma = new SMA(5);
         this.ao = new AO();
     }
 
-    nextValue(high: number, low: number) {
+    nextValue(high: number, low: number): number | undefined {
         this.aoValue = this.ao.nextValue(high, low);
 
         if (this.aoValue === undefined) {
@@ -32,22 +32,22 @@ export class AC  implements StatefulIndicator<GenericIndicatorState> {
         }
 
         // Performance hack with method overrides speed up +30_000 op/sec
-        this.nextValue = (high: number, low: number) => {
-            this.aoValue = this.ao.nextValue(high, low);
-            this.smaValue = this.sma.nextValue(this.aoValue);
+        this.nextValue = (high: number, low: number): number => {
+            this.aoValue = this.ao.nextValue(high, low)!;
+            this.smaValue = this.sma.nextValue(this.aoValue)!;
 
             return this.aoValue - this.smaValue;
         };
 
         // Performance hack with method overrides
-        this.momentValue = (high: number, low: number) => {
-            return this.ao.momentValue(high, low) - this.sma.momentValue(this.aoValue);
+        this.momentValue = (high: number, low: number): number => {
+            return this.ao.momentValue(high, low)! - this.sma.momentValue(this.aoValue!)!;
         };
 
         return this.aoValue - this.smaValue;
     }
 
-    momentValue(high: number, low: number) {
+    momentValue(high: number, low: number): number | undefined {
         return;
     }
 
@@ -68,15 +68,15 @@ export class AC  implements StatefulIndicator<GenericIndicatorState> {
         delete (this as any).momentValue;
         if (this.aoValue === undefined || this.smaValue === undefined) return;
 
-        this.nextValue = (high: number, low: number) => {
-            this.aoValue = this.ao.nextValue(high, low);
-            this.smaValue = this.sma.nextValue(this.aoValue);
+        this.nextValue = (high: number, low: number): number => {
+            this.aoValue = this.ao.nextValue(high, low)!;
+            this.smaValue = this.sma.nextValue(this.aoValue)!;
 
             return this.aoValue - this.smaValue;
         };
 
-        this.momentValue = (high: number, low: number) => {
-            return this.ao.momentValue(high, low) - this.sma.momentValue(this.aoValue);
+        this.momentValue = (high: number, low: number): number => {
+            return this.ao.momentValue(high, low)! - this.sma.momentValue(this.aoValue!)!;
         };
     }
 }

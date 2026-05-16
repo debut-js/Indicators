@@ -26,7 +26,7 @@ export class Stochastic  implements StatefulIndicator<GenericIndicatorState> {
      * Get next value for closed candle hlc
      * affect all next calculations
      */
-    nextValue(high: number, low: number, close: number) {
+    nextValue(high: number, low: number, close: number): { k: number; d: number } | undefined {
         const max = this.max.nextValue(high);
         const min = this.min.nextValue(low);
 
@@ -35,7 +35,10 @@ export class Stochastic  implements StatefulIndicator<GenericIndicatorState> {
         }
 
         const k: number = ((close - min) / (max - min)) * 100;
-        const d: number = this.sma.nextValue(k);
+        const d = this.sma.nextValue(k);
+        if (d === undefined) {
+            return;
+        }
 
         return { k, d };
     }
@@ -44,7 +47,7 @@ export class Stochastic  implements StatefulIndicator<GenericIndicatorState> {
      * Get next value for non closed (tick) candle hlc
      * does not affect any next calculations
      */
-    momentValue(high: number, low: number, close: number): { k: number; d: number } {
+    momentValue(high: number, low: number, close: number): { k: number; d: number } | undefined {
         if (!this.max.filled()) {
             return;
         }
@@ -53,7 +56,10 @@ export class Stochastic  implements StatefulIndicator<GenericIndicatorState> {
         const min = this.min.momentValue(low);
 
         const k: number = ((close - min) / (max - min)) * 100;
-        const d: number = this.sma.momentValue(k);
+        const d = this.sma.momentValue(k);
+        if (d === undefined) {
+            return;
+        }
 
         return { k, d };
     }

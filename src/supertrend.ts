@@ -7,10 +7,10 @@ import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjec
  */
 export class SuperTrend  implements StatefulIndicator<GenericIndicatorState> {
     private atr: ATR;
-    private prevSuper: number;
-    private prevUpper: number;
-    private prevLower: number;
-    private prevClose: number;
+    private prevSuper: number | undefined;
+    private prevUpper: number | undefined;
+    private prevLower: number | undefined;
+    private prevClose: number | undefined;
 
     constructor(
         period = 10,
@@ -23,12 +23,12 @@ export class SuperTrend  implements StatefulIndicator<GenericIndicatorState> {
     nextValue(h: number, l: number, c: number) {
         const atr = this.atr.nextValue(h, l, c);
 
-        if (atr) {
+        if (atr !== undefined) {
             const src = (h + l) / 2;
             let upper = src + this.multiplier * atr;
             let lower = src - this.multiplier * atr;
 
-            if (this.prevLower) {
+            if (this.prevLower !== undefined && this.prevUpper !== undefined && this.prevClose !== undefined) {
                 lower = lower > this.prevLower || this.prevClose < this.prevLower ? lower : this.prevLower;
                 upper = upper < this.prevUpper || this.prevClose > this.prevUpper ? upper : this.prevUpper;
             }
@@ -54,12 +54,15 @@ export class SuperTrend  implements StatefulIndicator<GenericIndicatorState> {
 
     momentValue(h: number, l: number, c: number) {
         const atr = this.atr.momentValue(h, l);
+        if (atr === undefined) {
+            return;
+        }
         const src = (h + l) / 2;
 
         let upper = src + this.multiplier * atr;
         let lower = src - this.multiplier * atr;
 
-        if (this.prevLower) {
+        if (this.prevLower !== undefined && this.prevUpper !== undefined && this.prevSuper !== undefined && this.prevClose !== undefined) {
             lower = lower > this.prevLower || this.prevClose < this.prevLower ? lower : this.prevLower;
             upper = upper < this.prevSuper || this.prevClose > this.prevUpper ? upper : this.prevUpper;
         }

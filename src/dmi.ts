@@ -13,9 +13,9 @@ import { GenericIndicatorState, StatefulIndicator, dumpObjectState, restoreObjec
  * - ADX: Average Directional Index (optional)
  */
 export class DMI  implements StatefulIndicator<GenericIndicatorState> {
-    private prevHigh: number;
-    private prevLow: number;
-    private prevClose: number;
+    private prevHigh: number | undefined;
+    private prevLow: number | undefined;
+    private prevClose: number | undefined;
     private wemaP: WEMA;
     private wemaN: WEMA;
     private wemaADX: WEMA;
@@ -37,7 +37,7 @@ export class DMI  implements StatefulIndicator<GenericIndicatorState> {
      * @param c Close price of the current bar
      */
     nextValue(h: number, l: number, c: number) {
-        if (this.prevClose === undefined) {
+        if (this.prevClose === undefined || this.prevHigh === undefined || this.prevLow === undefined) {
             this.prevHigh = h;
             this.prevLow = l;
             this.prevClose = c;
@@ -62,7 +62,7 @@ export class DMI  implements StatefulIndicator<GenericIndicatorState> {
         this.prevHigh = h;
         this.prevLow = l;
         this.prevClose = c;
-        if (avgPDM === undefined || avgNDM === undefined || atr === 0) {
+        if (atr === undefined || avgPDM === undefined || avgNDM === undefined || atr === 0) {
             return;
         }
         const plusDI = (avgPDM * 100) / atr;
@@ -83,7 +83,7 @@ export class DMI  implements StatefulIndicator<GenericIndicatorState> {
      * @param c Close price of the current bar
      */
     momentValue(h: number, l: number, c: number) {
-        if (this.prevClose === undefined) {
+        if (this.prevClose === undefined || this.prevHigh === undefined || this.prevLow === undefined) {
             return;
         }
         let pDM = 0;
@@ -102,7 +102,7 @@ export class DMI  implements StatefulIndicator<GenericIndicatorState> {
         const atr = getTrueRange(h, l, this.prevClose);
         const avgPDM = this.wemaP.momentValue(pDM);
         const avgNDM = this.wemaN.momentValue(nDM);
-        if (avgPDM === undefined || avgNDM === undefined || atr === 0) {
+        if (atr === undefined || avgPDM === undefined || avgNDM === undefined || atr === 0) {
             return;
         }
         const plusDI = (avgPDM * 100) / atr;

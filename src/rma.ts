@@ -13,7 +13,7 @@ export interface RMAState {
  * This makes the RMA similar to the Exponential Moving Average, although it’s somewhat slower to respond than an EMA is.
  */
 export class RMA implements StatefulIndicator<RMAState> {
-    private prevValue: number;
+    private prevValue: number | undefined;
     private alpha: number;
     private sma: SMA;
 
@@ -22,14 +22,14 @@ export class RMA implements StatefulIndicator<RMAState> {
         this.sma = new SMA(this.period);
     }
 
-    nextValue(value: number) {
+    nextValue(value: number): number | undefined {
         if (this.prevValue === undefined) {
             this.prevValue = this.sma.nextValue(value);
         } else {
             this.prevValue = this.alpha * value + (1 - this.alpha) * this.prevValue;
 
-            this.nextValue = (value: number) => {
-                this.prevValue = this.alpha * value + (1 - this.alpha) * this.prevValue;
+            this.nextValue = (value: number): number => {
+                this.prevValue = this.alpha * value + (1 - this.alpha) * this.prevValue!;
 
                 return this.prevValue;
             };
@@ -38,7 +38,7 @@ export class RMA implements StatefulIndicator<RMAState> {
         return this.prevValue;
     }
 
-    momentValue(value: number) {
+    momentValue(value: number): number | undefined {
         if (this.prevValue !== undefined) {
             return this.alpha * value + (1 - this.alpha) * this.prevValue;
         }
@@ -70,8 +70,8 @@ export class RMA implements StatefulIndicator<RMAState> {
         delete (this as any).nextValue;
         if (this.prevValue === undefined) return;
 
-        this.nextValue = (value: number) => {
-            this.prevValue = this.alpha * value + (1 - this.alpha) * this.prevValue;
+        this.nextValue = (value: number): number => {
+            this.prevValue = this.alpha * value + (1 - this.alpha) * this.prevValue!;
 
             return this.prevValue;
         };

@@ -18,7 +18,7 @@ export class cRSI  implements StatefulIndicator<GenericIndicatorState> {
     private updownRsi: RSI;
     private prevClose: number;
     private updownPeriod: number;
-    private updownValue: number;
+    private updownValue: number | undefined;
     private roc: ROC;
     private percentRank: PercentRank;
 
@@ -31,35 +31,37 @@ export class cRSI  implements StatefulIndicator<GenericIndicatorState> {
         this.prevClose = 0;
     }
 
-    nextValue(value: number) {
+    nextValue(value: number): number | undefined {
         const rsi = this.rsi.nextValue(value);
-        const percentRank = this.percentRank.nextValue(this.roc.nextValue(value));
+        const roc = this.roc.nextValue(value);
+        const percentRank = roc === undefined ? undefined : this.percentRank.nextValue(roc);
 
         this.updownPeriod = this.getUpdownPeriod(value);
         this.prevClose = value;
         this.updownValue = this.updownRsi.nextValue(this.updownPeriod);
 
-        if (!this.updownValue) {
+        if (rsi === undefined || this.updownValue === undefined || percentRank === undefined) {
             return;
         }
 
         return (rsi + this.updownValue + percentRank) / 3;
     }
 
-    momentValue(value: number) {
+    momentValue(value: number): number | undefined {
         const rsi = this.rsi.momentValue(value);
-        const percentRank = this.percentRank.momentValue(this.roc.momentValue(value));
+        const roc = this.roc.momentValue(value);
+        const percentRank = roc === undefined ? undefined : this.percentRank.momentValue(roc);
         const updownPeriod = this.getUpdownPeriod(value);
         const updownValue = this.updownRsi.momentValue(updownPeriod);
 
-        if (updownValue === undefined) {
+        if (rsi === undefined || updownValue === undefined || percentRank === undefined) {
             return;
         }
 
         return (rsi + updownValue + percentRank) / 3;
     }
 
-    private getUpdownPeriod(value: number) {
+    private getUpdownPeriod(value: number): number {
         let updownPeriod = this.updownPeriod;
 
         if (value > this.prevClose) {

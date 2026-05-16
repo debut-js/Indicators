@@ -39,7 +39,7 @@ export class UniLevel<T extends IndicatorConstructor> {
         const low = (value <= 0 ? value : this.lastLowerValue) * this.multiplier;
         const up = (value >= 0 ? value : this.lastUpperValue) * this.multiplier;
 
-        return [this.samplerUp.nextValue(up) + this.offset, this.samplerLow.nextValue(low) - this.offset];
+        return [this.samplerUp.nextValue(up)! + this.offset, this.samplerLow.nextValue(low)! - this.offset];
     }
 }
 
@@ -55,8 +55,8 @@ export class Level  implements StatefulIndicator<GenericIndicatorState> {
     private sample2Low: WEMA | SMA | EMA;
     private sample3Low: WEMA | SMA | EMA;
 
-    private upper = 0;
-    private lower = 0;
+    private upper: number | null | undefined = 0;
+    private lower: number | null | undefined = 0;
     private lastUpperValue = 0;
     private lastLowerValue = 0;
 
@@ -90,15 +90,15 @@ export class Level  implements StatefulIndicator<GenericIndicatorState> {
         return { upper: this.upper, lower: this.lower };
     }
 
-    public getUp(value: number) {
+    public getUp(value: number): number | null | undefined {
         const sample1 = this.sample1Up.nextValue(value);
-        let sample2: number | null = null;
+        let sample2: number | null | undefined = null;
 
         if (this.samples === 1) {
             return sample1;
         }
 
-        if (sample1) {
+        if (sample1 !== undefined) {
             sample2 = this.sample2Up.nextValue(sample1);
         }
 
@@ -106,22 +106,22 @@ export class Level  implements StatefulIndicator<GenericIndicatorState> {
             return sample2;
         }
 
-        if (sample2) {
+        if (sample2 !== undefined && sample2 !== null) {
             return this.sample3Up.nextValue(sample2);
         }
 
         return null;
     }
 
-    public getDown(value: number) {
+    public getDown(value: number): number | null | undefined {
         const sample1 = this.sample1Low.nextValue(value);
-        let sample2: number | null = null;
+        let sample2: number | null | undefined = null;
 
         if (this.samples === 1) {
             return sample1;
         }
 
-        if (sample1) {
+        if (sample1 !== undefined) {
             sample2 = this.sample2Low.nextValue(sample1);
         }
 
@@ -129,7 +129,7 @@ export class Level  implements StatefulIndicator<GenericIndicatorState> {
             return sample2;
         }
 
-        if (sample2) {
+        if (sample2 !== undefined && sample2 !== null) {
             return this.sample3Low.nextValue(sample2);
         }
 

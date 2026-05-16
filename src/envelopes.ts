@@ -25,18 +25,21 @@ export class Envelopes  implements StatefulIndicator<GenericIndicatorState> {
      * Adds a new value and returns the envelopes
      * @param close Close price of the current bar
      */
-    nextValue(close: number) {
+    nextValue(close: number): { lower: number; middle: number; upper: number } | undefined {
         const middle = this.sma.nextValue(close);
         this.fill++;
         if (this.fill !== this.period) {
+            return;
+        }
+        if (middle === undefined) {
             return;
         }
         const deviation = middle * this.percent / 100;
         const upper = middle + deviation;
         const lower = middle - deviation;
 
-        this.nextValue = (close: number) => {
-            const middle = this.sma.nextValue(close);
+        this.nextValue = (close: number): { lower: number; middle: number; upper: number } => {
+            const middle = this.sma.nextValue(close)!;
             const deviation = middle * this.percent / 100;
             const upper = middle + deviation;
             const lower = middle - deviation;
@@ -49,8 +52,11 @@ export class Envelopes  implements StatefulIndicator<GenericIndicatorState> {
      * Calculates envelopes for the current (not closed) bar without changing the internal state
      * @param close Close price of the current bar
      */
-    momentValue(close: number) {
+    momentValue(close: number): { lower: number; middle: number; upper: number } | undefined {
         const middle = this.sma.momentValue(close);
+        if (middle === undefined) {
+            return;
+        }
         const deviation = middle * this.percent / 100;
         const upper = middle + deviation;
         const lower = middle - deviation;
@@ -73,8 +79,8 @@ export class Envelopes  implements StatefulIndicator<GenericIndicatorState> {
         delete (this as any).nextValue;
         if (this.fill < this.period) return;
 
-        this.nextValue = (close: number) => {
-            const middle = this.sma.nextValue(close);
+        this.nextValue = (close: number): { lower: number; middle: number; upper: number } => {
+            const middle = this.sma.nextValue(close)!;
             const deviation = middle * this.percent / 100;
             const upper = middle + deviation;
             const lower = middle - deviation;

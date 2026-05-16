@@ -31,18 +31,19 @@ export class KeltnerChannel  implements StatefulIndicator<GenericIndicatorState>
      * @param low Low price of the current bar
      * @param close Close price of the current bar
      */
-    nextValue(high: number, low: number, close: number) {
+    nextValue(high: number, low: number, close: number): { lower: number; middle: number; upper: number } | undefined {
         const middle = this.ema.nextValue(close);
         const atr = this.atr.nextValue(high, low, close);
         this.fill++;
-        if (this.fill !== this.period) {
+        if (middle === undefined || atr === undefined) {
             return;
         }
+
         const upper = middle + this.multiplier * atr;
         const lower = middle - this.multiplier * atr;
-        this.nextValue = (high: number, low: number, close: number) => {
-            const middle = this.ema.nextValue(close);
-            const atr = this.atr.nextValue(high, low, close);
+        this.nextValue = (high: number, low: number, close: number): { lower: number; middle: number; upper: number } => {
+            const middle = this.ema.nextValue(close)!;
+            const atr = this.atr.nextValue(high, low, close)!;
             const upper = middle + this.multiplier * atr;
             const lower = middle - this.multiplier * atr;
             return { lower, middle, upper };
@@ -56,9 +57,12 @@ export class KeltnerChannel  implements StatefulIndicator<GenericIndicatorState>
      * @param low Low price of the current bar
      * @param close Close price of the current bar
      */
-    momentValue(high: number, low: number, close: number) {
+    momentValue(high: number, low: number, close: number): { lower: number; middle: number; upper: number } | undefined {
         const middle = this.ema.momentValue(close);
         const atr = this.atr.momentValue(high, low);
+        if (middle === undefined || atr === undefined) {
+            return;
+        }
         const upper = middle + this.multiplier * atr;
         const lower = middle - this.multiplier * atr;
         return { lower, middle, upper };
@@ -78,11 +82,11 @@ export class KeltnerChannel  implements StatefulIndicator<GenericIndicatorState>
 
     private bindFilledNextValue(): void {
         delete (this as any).nextValue;
-        if (this.fill < this.period) return;
+        if (this.fill <= this.period) return;
 
-        this.nextValue = (high: number, low: number, close: number) => {
-            const middle = this.ema.nextValue(close);
-            const atr = this.atr.nextValue(high, low, close);
+        this.nextValue = (high: number, low: number, close: number): { lower: number; middle: number; upper: number } => {
+            const middle = this.ema.nextValue(close)!;
+            const atr = this.atr.nextValue(high, low, close)!;
             const upper = middle + this.multiplier * atr;
             const lower = middle - this.multiplier * atr;
             return { lower, middle, upper };

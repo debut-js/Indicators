@@ -7,7 +7,7 @@ export class MeanDeviationProvider implements StatefulIndicator<GenericIndicator
         this.values = new CircularBuffer(period);
     }
 
-    nextValue(typicalPrice: number, average?: number) {
+    nextValue(typicalPrice: number, average?: number): number | undefined {
         if (average === undefined) {
             this.values.push(typicalPrice);
             return void 0;
@@ -19,17 +19,17 @@ export class MeanDeviationProvider implements StatefulIndicator<GenericIndicator
         return this.pureNextValue(typicalPrice, average);
     }
 
-    momentValue(typicalPrice: number, average?: number) {
+    momentValue(typicalPrice: number, average?: number): number | undefined {
         return void 0;
     }
 
-    private pureNextValue(typicalPrice: number, average: number) {
+    private pureNextValue(typicalPrice: number, average: number): number {
         this.values.push(typicalPrice);
 
         return this.values.toArray().reduce((acc, value) => acc + this.positiveDelta(average, value), 0) / this.period;
     }
 
-    private pureMomentValue(typicalPrice: number, average: number) {
+    private pureMomentValue(typicalPrice: number, average: number): number {
         // Sum the absolute deviations over the hypothetical post-push
         // window without mutating the buffer: skip the slot that would
         // be evicted (when filled) and tack on `typicalPrice` as the

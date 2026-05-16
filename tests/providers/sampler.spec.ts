@@ -20,11 +20,11 @@ describe('Sampler', () => {
 
         data.forEach((item) => {
             const sample1 = sma1.nextValue(item);
-            const sample2 = sample1 !== undefined && sma2.nextValue(sample1);
-            const sample3 = sample2 !== undefined && sma3.nextValue(sample2);
+            const sample2 = sample1 === undefined ? undefined : sma2.nextValue(sample1);
+            const sample3 = sample2 === undefined ? undefined : sma3.nextValue(sample2);
             const samplerValue = sampler.nextValue(item);
 
-            if (sample3 && samplerValue) {
+            if (sample3 !== undefined && samplerValue !== undefined) {
                 expect(samplerValue).toBe(sample3);
             }
         });

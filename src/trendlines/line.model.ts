@@ -1,25 +1,31 @@
 import { LineEvent, LineDirective, Point } from './types';
 
+type ExtremumPoint = {
+    x: number;
+    h: number;
+    l: number;
+};
+
 /**
  * Line Model class.
  * this.index - index in lineDirectives array
  */
 export class LineModel {
-    public type: 'h' | 'l';
+    public type!: 'h' | 'l';
     public index: number;
     public length: number; //Line's living time
     //TODO Make points window in FIFO stack
-    public startPoint: Point;
-    public prevPoint: Point;
-    public thisPoint: Point; // Current Point on the line
-    public nextPoint: Point;
-    public candlePoint: Point; // Point on the current candle
+    public startPoint!: Point;
+    public prevPoint!: Point;
+    public thisPoint!: Point; // Current Point on the line
+    public nextPoint!: Point;
+    public candlePoint!: Point; // Point on the current candle
     public forked: boolean = false; // Flag of bounced line
-    public forkedAt: number = 0;
-    public forkedValue: number;
-    public lastForkY: number = null; // Last fork or extremum point
-    public k: number;
-    private b: number;
+    public forkedAt: number | null = 0;
+    public forkedValue: number | null = null;
+    public lastForkY: number | null = null; // Last fork or extremum point
+    public k!: number;
+    private b!: number;
     private step: number; // Step of time in minutes
     // rollback of the line: the case when a price change direction is opposite the line direction
     public rollback: {
@@ -30,28 +36,28 @@ export class LineModel {
         lastForkValue: number;
     } | null;
 
-    constructor(h, l, i, step, index, prevPoint = null) {
+    constructor(h: number | null, l: number | null, i: number, step: number, index: number, prevPoint: ExtremumPoint | null = null) {
         this.step = step;
         this.index = index;
         this.length = 0;
         // TODO On fork startPoint is the fork point not the candle point
         this.startPoint = prevPoint
             ? {
-                  y: h ? prevPoint.h : prevPoint.l,
+                  y: h != null ? prevPoint.h : prevPoint.l,
                   x: prevPoint.x,
               }
             : {
-                  y: h || l,
+                  y: h != null ? h : l!,
                   x: i,
               };
         this.init(h, l, i);
         this.thisPoint = this.startPoint;
     }
 
-    init(h, l, i) {
-        if (!this.type) this.type = h ? 'h' : 'l';
+    init(h: number | null, l: number | null, i: number) {
+        if (!this.type) this.type = h != null ? 'h' : 'l';
         this.candlePoint = {
-            y: this.type == 'h' ? h : l,
+            y: this.type == 'h' ? h! : l!,
             x: i,
         };
         // Shift window if data exists
@@ -71,8 +77,8 @@ export class LineModel {
      * @param l
      * @param i
      */
-    update(h, l, i): LineDirective {
-        let result = null;
+    update(h: number | null, l: number | null, i: number): LineDirective | null {
+        let result: LineDirective | null = null;
         this.length++;
         this.init(h, l, i);
         // Init К b

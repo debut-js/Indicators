@@ -14,9 +14,9 @@ describe('Bollinger Bands', () => {
             if (!excel && !calculated) {
                 expect(excel).toEqual(calculated);
             } else {
-                expect(Math.abs(calculated.upper - excel.upper)).toBeLessThan(EPSILON);
-                expect(Math.abs(calculated.middle - excel.middle)).toBeLessThan(EPSILON);
-                expect(Math.abs(calculated.lower - excel.lower)).toBeLessThan(EPSILON);
+                expect(Math.abs(calculated!.upper - excel!.upper)).toBeLessThan(EPSILON);
+                expect(Math.abs(calculated!.middle - excel!.middle)).toBeLessThan(EPSILON);
+                expect(Math.abs(calculated!.lower - excel!.lower)).toBeLessThan(EPSILON);
             }
         });
     });

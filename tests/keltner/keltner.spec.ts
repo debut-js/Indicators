@@ -36,9 +36,9 @@ describe('KeltnerChannel', () => {
         const ku = kc.momentValue(h2, l2, last) as { lower: number; middle: number; upper: number };
         const mid = ema.momentValue(last);
         const a = atr.momentValue(h2, l2) as number;
-        expect(ku.middle).toBeCloseTo(mid, 5);
-        expect(ku.upper).toBeCloseTo(mid + m * a, 5);
-        expect(ku.lower).toBeCloseTo(mid - m * a, 5);
+        expect(ku.middle).toBeCloseTo(mid!, 5);
+        expect(ku.upper).toBeCloseTo(mid! + m * a, 5);
+        expect(ku.lower).toBeCloseTo(mid! - m * a, 5);
     });
 
     it('Cross sdk: matches technicalindicators KeltnerChannels (EMA middle, WEMA ATR)', () => {

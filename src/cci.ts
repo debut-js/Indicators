@@ -16,20 +16,32 @@ export class CCI  implements StatefulIndicator<GenericIndicatorState> {
         this.sma = new SMA(period);
     }
 
-    nextValue(high: number, low: number, close: number) {
+    nextValue(high: number, low: number, close: number): number | undefined {
         const typicalPrice = (high + low + close) / 3;
         const average = this.sma.nextValue(typicalPrice);
         const meanDeviation = this.md.nextValue(typicalPrice, average);
+        if (average === undefined) {
+            return;
+        }
+        if (meanDeviation === undefined) {
+            return;
+        }
 
-        return meanDeviation && (typicalPrice - average) / (0.015 * meanDeviation);
+        return (typicalPrice - average) / (0.015 * meanDeviation);
     }
 
-    momentValue(high: number, low: number, close: number) {
+    momentValue(high: number, low: number, close: number): number | undefined {
         const typicalPrice = (high + low + close) / 3;
         const average = this.sma.momentValue(typicalPrice);
+        if (average === undefined) {
+            return;
+        }
         const meanDeviation = this.md.momentValue(typicalPrice, average);
+        if (meanDeviation === undefined) {
+            return;
+        }
 
-        return meanDeviation && (typicalPrice - average) / (0.015 * meanDeviation);
+        return (typicalPrice - average) / (0.015 * meanDeviation);
     }
 
 

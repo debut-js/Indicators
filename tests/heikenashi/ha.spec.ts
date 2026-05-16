@@ -33,10 +33,10 @@ describe('Heiken Ashi', () => {
 
             const cross = ha2.nextValue({ open: tick.o, high: tick.h, low: tick.l, close: tick.c });
 
-            expect(calculated.o - cross.open).toBeLessThan(EPSILON);
-            expect(calculated.h - cross.high).toBeLessThan(EPSILON);
-            expect(calculated.l - cross.low).toBeLessThan(EPSILON);
-            expect(calculated.c - cross.close).toBeLessThan(EPSILON);
+            expect(calculated!.o - cross!.open!).toBeLessThan(EPSILON);
+            expect(calculated!.h - cross!.high!).toBeLessThan(EPSILON);
+            expect(calculated!.l - cross!.low!).toBeLessThan(EPSILON);
+            expect(calculated!.c - cross!.close!).toBeLessThan(EPSILON);
         });
     });
 });

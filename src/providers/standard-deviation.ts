@@ -13,13 +13,19 @@ export class StandardDeviation implements StatefulIndicator<StandardDeviationSta
         this.values = new CircularBuffer(period);
     }
 
-    nextValue(value: number, mean?: number) {
+    nextValue(value: number, mean?: number): number | undefined {
         this.values.push(value);
+        if (mean === undefined) {
+            return;
+        }
 
         return Math.sqrt(this.values.toArray().reduce((acc, item) => acc + (item - mean) ** 2, 0) / this.period);
     }
 
-    momentValue(value: number, mean?: number) {
+    momentValue(value: number, mean?: number): number | undefined {
+        if (mean === undefined) {
+            return;
+        }
         // Sum squared deviations over the hypothetical post-push window
         // without mutating the buffer: skip the would-be-evicted slot
         // (when filled) and append `value` as the newest entry.

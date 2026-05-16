@@ -35,7 +35,7 @@ export class HistoricalVolatility  implements StatefulIndicator<GenericIndicator
 
         const mean = this.sma.nextValue(r);
         const sd = this.stdev.nextValue(r, mean);
-        if (mean === undefined) return;
+        if (mean === undefined || sd === undefined) return;
         return sd * this.multiplier;
     }
 
@@ -45,6 +45,7 @@ export class HistoricalVolatility  implements StatefulIndicator<GenericIndicator
         const mean = this.sma.momentValue(r);
         if (mean === undefined) return;
         const sd = this.stdev.momentValue(r, mean);
+        if (sd === undefined) return;
         return sd * this.multiplier;
     }
 

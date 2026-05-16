@@ -11,7 +11,7 @@ export class PercentRank implements StatefulIndicator<GenericIndicatorState> {
         this.values = new CircularBuffer(period);
     }
 
-    public nextValue(value: number) {
+    public nextValue(value: number): number | undefined {
         this.values.push(value);
         this.fill++;
 
@@ -30,11 +30,11 @@ export class PercentRank implements StatefulIndicator<GenericIndicatorState> {
         }
     }
 
-    public momentValue(value: number): number {
+    public momentValue(value: number): number | undefined {
         return;
     }
 
-    private calc(value: number) {
+    private calc(value: number): number {
         let count = 0;
 
         this.values.toArray().forEach((item) => {
